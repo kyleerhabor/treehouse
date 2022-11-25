@@ -2,13 +2,13 @@
   (:require
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
-   [kyleerhabor.treehouse.util :refer [debug?]]
+   [kyleerhabor.treehouse.util :refer [debug?]] 
+   [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
+   [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]] 
    [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
    [#?(:clj com.fulcrologic.fulcro.dom-server
        :cljs com.fulcrologic.fulcro.dom) :as dom]
-   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]
-   [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
-   [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]]))
+   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]))
 
 (defn singleton [id]
   [::id id])
@@ -63,12 +63,20 @@
 
 (def ui-heading (comp/factory Heading))
 
+(defsc Home [_ _] 
+  (dom/div
+    (dom/h1 "Hello!")
+    (dom/p "I'm Kyle Erhabor, a software developer known under the pseudonym Klay.")))
+
+(def ui-home (comp/factory Home))
+
 (defsc App [_ {::keys [heading]}]
   {:query [{::heading (comp/get-query Heading)}]
    :ident (fn [] (singleton ::App))
    :initial-state (fn [_] {::heading (comp/get-initial-state Heading)})}
   (dom/div
-    (ui-heading heading)))
+    (ui-heading heading)
+    (ui-home)))
 
 (def ui-app (comp/factory App))
 
@@ -79,7 +87,7 @@
 
 (def ui-root (comp/factory Root))
 
-(defsc Document [this props {:keys [db]}]
+(defn document [db props]
   (dom/html
     (dom/head
       (dom/meta {:charset "UTF-8"})
@@ -88,12 +96,9 @@
       (dom/title "Kyle Erhabor")
       (dom/script
         (str "window.INITIAL_APP_STATE = \"" (base64-encode (transit-clj->str db)) \"))
-      (style-element {:component this
+      (style-element {:component Root
                       :garden-flags {:pretty-print? debug?}}))
     (dom/body
       (dom/div :#app
         (ui-root props))
-      (dom/script {:src "/assets/main/js/compiled/main.js"}
-        "kyleerhabor.treehouse.client.init();"))))
-
-(def ui-document (comp/computed-factory Document))
+      (dom/script {:src "/assets/main/js/compiled/main.js"}))))

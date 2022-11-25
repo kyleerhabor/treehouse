@@ -6,7 +6,7 @@
    [com.fulcrologic.fulcro.data-fetch :refer [load!]]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]))
 
-(defn ^:export init []
+(defn init []
   (reset! (app/state app) (ssr/get-SSR-initial-state))
   (mount {:hydrate? true})
   (load! app :discord ui/Discord)

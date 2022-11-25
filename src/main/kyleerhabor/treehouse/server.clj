@@ -19,7 +19,9 @@
    [reitit.middleware :as-alias rmw]
    [reitit.ring.middleware.exception :as rrex]))
 
-(defn allowed [request]
+(defn allowed
+  "Returns a comma-separated string of the request methods supported by a request."
+  [request]
   (->> (:result (rr/get-match request))
     (filter val)
     (map #(str/upper-case (name (key %))))
@@ -30,14 +32,15 @@
     (let [db (-> (ssr/build-initial-state (comp/get-initial-state ui/Root) ui/Root)
                (assoc :email (:kyleerhabor.treehouse.media/email config)))
           props (db->tree (comp/get-query ui/Root) db db)
-          html (dom/render-to-str (ui/ui-document props {:db db}))]
-      html
+          ;; In the Fulcro docs, comp/*app* is bound before rendering. The server is written in .clj, however, and my
+          ;; app is in .cljs (since it uses remotes). Hopefully this won't cause issues.
+          html (dom/render-to-str (ui/document db props))]
       (-> (str doctype html)
         ;; Fulcro escapes quotes, which is annoying here since I need to embed JavaScript in the code. I'd like to use
-        ;; ssr/initial-state->script-tag, but that returns a string, and I can't embed the HTML in the head with
-        ;; :dangerouslySetInnerHTML without introducing a non-valid element (e.g. div) in the head. The alternative
-        ;; would be building raw HTML (i.e. using strings instead of dom/...), which would be worse. If Fulcro had a
-        ;; special type for strings that shouldn't be unwrapped (like Hiccup does), this would be simpler.
+        ;; ssr/initial-state->script-tag, but it returns a string, which can't be embedded in the HTML head with
+        ;; :dangerouslySetInnerHTML without introducing a non-valid element (e.g. div). The alternative would be
+        ;; building raw HTML (i.e. using strings instead of dom/...), which would be worse. If Fulcro had a special type
+        ;; for preserving characters (like Hiccup does), this would be simpler.
         (str/replace #"window\.INITIAL_APP_STATE = &quot;(.+)&quot;" (fn [[_ s]]
                                                                        (str "window.INITIAL_APP_STATE = \"" s \")))
         res/response
@@ -47,26 +50,37 @@
   (let [r (eql/parse query)]
     (s/generate-response (merge (res/response r) (s/apply-response-augmentations r)))))
 
-(def routes [["/" {:get page-handler}]
-             ["/api" {:post {:handler api-handler
+(def routes [["/api" {:post {:handler api-handler
                              :middleware [[:transit-params]
                                           [:transit-response]]}}]])
 
 (def exception-middleware (rrex/create-exception-middleware {::rrex/default (constantly internal-server-error)}))
 
+(def default-options-endpoint {:handler (comp res/response allowed)})
+
 (def router (rr/router routes
-              {::rr/default-options-endpoint {:handler (comp res/response allowed)}
+              {::rr/default-options-endpoint default-options-endpoint
                ::rmw/registry {:transit-params [wrap-transit-params {:malformed-response (res/bad-request nil)}]
                                :transit-response wrap-transit-response
                                :exception exception-middleware}
                :data {:middleware [:exception]}}))
 
+(def default-handler-options
+  {:method-not-allowed (comp method-not-allowed allowed)
+   :not-acceptable (constantly not-acceptable)})
+
+(def default-routes [["*" {:get page-handler}]])
+
+(def default-router (rr/router default-routes {::rr/default-options-endpoint default-options-endpoint}))
+
+(def default-handler (rr/ring-handler default-router
+                       ;; As the default route accepts any route, it should be impossible to return a not found response.
+                       (rr/create-default-handler default-handler-options)))
+
 (def handler (rr/ring-handler router
                (rr/routes
                  (rr/create-resource-handler {:path "/"})
-                 (rr/create-default-handler {:not-found (constantly (res/not-found nil))
-                                             :method-not-allowed (comp method-not-allowed allowed)
-                                             :not-acceptable (constantly not-acceptable)}))))
+                 (rr/create-default-handler (assoc default-handler-options :not-found default-handler)))))
 
 (defstate server
   :start (run-jetty handler {:port (::port config)
