@@ -1,0 +1,41 @@
+{:source-paths ["src/main" "resources"]
+ :dependencies [[org.clojure/core.cache "1.0.225"]
+                
+                ;; UI
+                [com.fulcrologic/fulcro "3.5.29"]
+                [garden "1.3.10"]
+                [com.fulcrologic/fulcro-garden-css "3.0.9"]
+                
+                ;; Server
+                [ring/ring-core "1.9.6"]
+                [ring/ring-jetty-adapter "1.9.6"] 
+                [metosin/reitit-ring "0.5.18"]
+                [metosin/reitit-middleware "0.5.18"]
+                
+                ;; Database
+                [datalevin "0.6.22"]
+                [com.taoensso/encore "3.32.0"] ; Some dependency requires this.
+                
+                ;; Query
+                [com.wsscode/pathom "2.4.0"]
+                
+                ;; HTTP
+                [clj-http "3.12.3"]
+                [cheshire "5.11.0"]
+                
+                ;; Time
+                [tick "0.5.0"]
+                
+                ;; Others
+                [mount "0.1.16"]]
+ :jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED" 
+            "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]
+ :dev-http {8000 "classpath:public"}
+ :builds {:main {:target :browser
+                 :output-dir "resources/public/assets/main/js/compiled"
+                 :asset-path "/assets/main/js/compiled"
+                 :modules {:main {:init-fn kyleerhabor.treehouse.client/init-ssr
+                                  :entries [kyleerhabor.treehouse.client]}}
+                 :devtools {:after-load kyleerhabor.treehouse.client/refresh
+                            :preloads [com.fulcrologic.fulcro.inspect.preload
+                                       com.fulcrologic.fulcro.inspect.dom-picker-preload]}}}}

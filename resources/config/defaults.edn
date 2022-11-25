@@ -1,0 +1,2 @@
+{:kyleerhabor.treehouse.server/port 3000
+ :kyleerhabor.treehouse.server.db/dir "db"}

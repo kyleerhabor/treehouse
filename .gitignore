@@ -1,0 +1,11 @@
+# TODO: Add resources/config/* except resources/config/defaults.edn
+
+# Database
+db/
+
+# Shadow
+.shadow-cljs/
+resources/public/assets/*/*/compiled/
+
+# Node
+node_modules
