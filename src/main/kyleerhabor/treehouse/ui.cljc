@@ -36,6 +36,7 @@
    :ident (fn [] (singleton ::DiscordHeading))
    :initial-state {}}
   (dom/div
+    "Discord: "
     (str username \# discriminator)))
 
 (def ui-discord-heading (comp/factory DiscordHeading))
