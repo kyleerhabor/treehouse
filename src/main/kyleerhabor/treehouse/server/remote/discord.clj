@@ -3,6 +3,7 @@
    [clojure.set :refer [rename-keys]]
    [clj-http.client :as http]
    [kyleerhabor.treehouse.server.db :as db]
+   [kyleerhabor.treehouse.util :refer [debug?]]
    [datalevin.core :as d]))
 
 (def api-base-url "https://discord.com/api")
@@ -14,7 +15,7 @@
 (def current-user-url (str api-url "/users/@me"))
 
 (def default-request {:as :json
-                      :throw-entire-message true})
+                      :throw-entire-message debug?})
 
 (defn request
   ([url method] (request url method {}))

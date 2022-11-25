@@ -1,19 +1,38 @@
 (ns kyleerhabor.treehouse.ui
   (:require
-   [kyleerhabor.treehouse.model.media.discord.user :as-alias du] 
+   [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
+   [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
+   [kyleerhabor.treehouse.util :refer [debug?]]
    [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
    [#?(:clj com.fulcrologic.fulcro.dom-server
-       :cljs com.fulcrologic.fulcro.dom) :as dom]))
+       :cljs com.fulcrologic.fulcro.dom) :as dom]
+   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]
+   [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
+   [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]]))
 
 (defn singleton [id]
   [::id id])
+
+(defsc Github [_ _]
+  {:query [::gu/id ::gu/url]
+   :ident ::gu/id})
+
+(defsc GithubHeading [_ {::gu/keys [url]}]
+  {:query [::gu/url]
+   :ident (fn [] (singleton ::GithubHeading))
+   :initial-state {}}
+  (dom/div
+    (dom/a {:href url}
+      "GitHub")))
+
+(def ui-github-heading (comp/factory GithubHeading))
 
 (defsc Discord [_ _]
   {:query [::du/id ::du/username ::du/discriminator]
    :ident ::du/id})
 
 (defsc DiscordHeading [_ {::du/keys [username discriminator]}]
-  {:query [::du/id ::du/username ::du/discriminator] 
+  {:query [::du/username ::du/discriminator] 
    :ident (fn [] (singleton ::DiscordHeading))
    :initial-state {}}
   (dom/div
@@ -21,9 +40,10 @@
 
 (def ui-discord-heading (comp/factory DiscordHeading))
 
-(defsc Heading [_ {:keys [discord email]}]
-  {:query [{[:discord '_] (comp/get-query Discord)}
-           [:email '_]]
+(defsc Heading [_ {:keys [discord email github]}]
+  {:query [[:email '_]
+           {[:discord '_] (comp/get-query Discord)}
+           {[:github '_] (comp/get-query Github)}]
    :initial-state {}
    :ident (fn [] (singleton ::Heading))}
   (dom/header
@@ -34,7 +54,10 @@
             (dom/li
               (dom/a {:href (str "mailto:" email)}
                 "Email")))
-          (if (::du/id discord)
+          (if github
+            (dom/li
+              (ui-github-heading github)))
+          (if discord
             (dom/li
               (ui-discord-heading discord))))))))
 
@@ -55,3 +78,22 @@
   (ui-app app))
 
 (def ui-root (comp/factory Root))
+
+(defsc Document [this props {:keys [db]}]
+  (dom/html
+    (dom/head
+      (dom/meta {:charset "UTF-8"})
+      (dom/meta {:name "viewport"
+                 :content "width=device-width, initial-scale=1"})
+      (dom/title "Kyle Erhabor")
+      (dom/script
+        (str "window.INITIAL_APP_STATE = \"" (base64-encode (transit-clj->str db)) \"))
+      (style-element {:component this
+                      :garden-flags {:pretty-print? debug?}}))
+    (dom/body
+      (dom/div :#app
+        (ui-root props))
+      (dom/script {:src "/assets/main/js/compiled/main.js"}
+        "kyleerhabor.treehouse.client.init();"))))
+
+(def ui-document (comp/computed-factory Document))
