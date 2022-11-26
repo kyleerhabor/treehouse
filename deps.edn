@@ -4,9 +4,8 @@
         com.fulcrologic/fulcro-garden-css {:mvn/version "3.0.9"}}
  :aliases {:clj {:extra-deps {org.clojure/core.cache {:mvn/version "1.0.225"}
                               org.clojure/data.json {:mvn/version "2.4.0"}
-                              cheshire/cheshire {:mvn/version "5.11.0"} ; For clj-http
-                              ;; Consider replacing for hato.
-                              clj-http/clj-http {:mvn/version "3.12.3"}
+                              cheshire/cheshire {:mvn/version "5.11.0"} ; For clj-http 
+                              clj-http/clj-http {:mvn/version "3.12.3"} ; Consider replacing for hato.
                               com.wsscode/pathom {:mvn/version "2.4.0"}
                               datalevin/datalevin {:mvn/version "0.6.22"}
                               district0x/graphql-query {:mvn/version "1.0.6"}
@@ -20,6 +19,4 @@
                  :jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
                             "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]}
            :cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.11.60"}
-                               thheller/shadow-cljs {:mvn/version "2.20.12"}
-                               ;; TODO: Move this to user deps?
-                               binaryage/devtools {:mvn/version "1.0.6"}}}}}
+                               thheller/shadow-cljs {:mvn/version "2.20.12"}}}}}
