@@ -64,7 +64,7 @@
 
 (def ui-heading (comp/factory Heading))
 
-(defsc Home [_ _] 
+(defsc Home [_ _]
   (dom/div
     (dom/h1 "Hello!")
     (dom/p "I'm Kyle Erhabor, a software developer known under the pseudonym Klay.")))
@@ -77,7 +77,7 @@
    :initial-state (fn [_] {::heading (comp/get-initial-state Heading)})}
   (dom/div
     (ui-heading heading)
-    (ui-home)))
+    (ui-home nil)))
 
 (def ui-app (comp/factory App))
 

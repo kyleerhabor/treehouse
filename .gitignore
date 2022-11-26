@@ -1,5 +1,9 @@
 # TODO: Add resources/config/* except resources/config/defaults.edn
 
+# deps.edn
+
+.cpcache/
+
 # Database
 db/
 
