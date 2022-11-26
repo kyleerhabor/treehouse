@@ -10,8 +10,7 @@
   "author": "Kyle Erhabor <kyleerhabor@gmail.com>",
   "devDependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "shadow-cljs": "^2.20.10"
+    "react-dom": "^18.2.0"
   },
   "dependencies": {
     "@js-joda/core": "3.2.0",
