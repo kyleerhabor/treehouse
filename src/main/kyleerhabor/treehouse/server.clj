@@ -11,7 +11,7 @@
    [com.fulcrologic.fulcro.components :as comp]
    [com.fulcrologic.fulcro.dom-server :as dom]
    [com.fulcrologic.fulcro.server.api-middleware :as s :refer [wrap-transit-params wrap-transit-response]]
-   [mount.core :refer [defstate]]
+   [mount.core :as m :refer [defstate]]
    [ring.adapter.jetty :refer [run-jetty]]
    [ring.util.mime-type :refer [default-mime-types]]
    [ring.util.response :as res] 
@@ -98,3 +98,7 @@
                              :join? false
                              :send-server-version? debug?})
   :stop (.stop server))
+
+(defn -main []
+  ;; This may be a little problematic in production since it doesn't naturally stop the states.
+  (m/start))
