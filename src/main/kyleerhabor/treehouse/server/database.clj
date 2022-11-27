@@ -1,4 +1,4 @@
-(ns kyleerhabor.treehouse.server.db
+(ns kyleerhabor.treehouse.server.database
   (:require
     [kyleerhabor.treehouse.server.config :refer [config]]
     [datalevin.core :as d]))

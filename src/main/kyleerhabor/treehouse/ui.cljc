@@ -2,7 +2,6 @@
   (:require
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
-   [kyleerhabor.treehouse.util :refer [debug?]] 
    [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
    [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]] 
    [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
@@ -98,7 +97,7 @@
       (dom/script
         (str "window.INITIAL_APP_STATE = \"" (base64-encode (transit-clj->str db)) \"))
       (style-element {:component Root
-                      :garden-flags {:pretty-print? debug?}}))
+                      :garden-flags {:pretty-print? false}}))
     (dom/body
       (dom/div :#app
         (ui-root props))

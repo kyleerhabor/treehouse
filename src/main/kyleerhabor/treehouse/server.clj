@@ -5,7 +5,6 @@
    [kyleerhabor.treehouse.server.query :as eql]
    [kyleerhabor.treehouse.server.response :refer [doctype internal-server-error method-not-allowed not-acceptable]]
    [kyleerhabor.treehouse.ui :as ui]
-   [kyleerhabor.treehouse.util :refer [debug?]]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
    [com.fulcrologic.fulcro.algorithms.denormalize :refer [db->tree]] 
    [com.fulcrologic.fulcro.components :as comp]
@@ -96,7 +95,7 @@
 (defstate server
   :start (run-jetty handler {:port (::port config)
                              :join? false
-                             :send-server-version? debug?})
+                             :send-server-version? false})
   :stop (.stop server))
 
 (defn -main []

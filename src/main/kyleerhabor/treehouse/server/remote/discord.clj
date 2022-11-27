@@ -2,8 +2,7 @@
   (:require
    [clojure.set :refer [rename-keys]]
    [clj-http.client :as http]
-   [kyleerhabor.treehouse.server.db :as db]
-   [kyleerhabor.treehouse.util :refer [debug?]]
+   [kyleerhabor.treehouse.server.database :as db]
    [datalevin.core :as d]))
 
 (def api-base-url "https://discord.com/api")
@@ -14,8 +13,7 @@
 
 (def current-user-url (str api-url "/users/@me"))
 
-(def default-request {:as :json
-                      :throw-entire-message debug?})
+(def default-request {:as :json})
 
 (defn request
   ([url method] (request url method {}))
@@ -40,8 +38,8 @@
                                                                          :type :grant_type
                                                                          :redirect :redirect_uri})}))
   
-  (def exchange-params {:id (:kyleerhabor.treehouse.server/discord-client-id config)
-                        :secret (:kyleerhabor.treehouse.server/discord-client-secret config)
+  (def exchange-params {:id (::client-id config)
+                        :secret (::client-secret config)
                         :redirect "http://localhost:3000/"})
 
   (defn save-access [res]
