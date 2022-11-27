@@ -1,15 +1,16 @@
-# TODO: Add resources/config/* except resources/config/defaults.edn
-
-# deps.edn
-
-.cpcache/
+# Config
+resources/config/*
+!resources/config/defaults.edn
 
 # Database
 db/
 
+# deps.edn
+.cpcache/
+
 # Shadow
 .shadow-cljs/
-resources/public/assets/*/*/compiled/
+resources/public/assets/*/js/compiled/
 
 # Node
 node_modules
