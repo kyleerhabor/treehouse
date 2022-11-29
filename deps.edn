@@ -2,7 +2,8 @@
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}
         com.fulcrologic/fulcro {:mvn/version "3.5.29"}
         com.fulcrologic/fulcro-garden-css {:mvn/version "3.0.9"}}
- :aliases {:clj {:extra-paths ["resources"]
+ :aliases {;; Maybe rename to client and server?
+           :clj {:extra-paths ["resources"]
                  :extra-deps {org.clojure/core.cache {:mvn/version "1.0.225"}
                               org.clojure/data.json {:mvn/version "2.4.0"}
                               cheshire/cheshire {:mvn/version "5.11.0"} ; For clj-http 
@@ -20,4 +21,5 @@
                  :jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
                             "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]}
            :cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.11.60"}
+                               com.fulcrologic/fulcro-rad {:mvn/version "1.3.9"}
                                thheller/shadow-cljs {:mvn/version "2.20.12"}}}}}

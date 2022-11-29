@@ -6,14 +6,15 @@
    [kyleerhabor.treehouse.server.response :refer [doctype internal-server-error method-not-allowed not-acceptable]]
    [kyleerhabor.treehouse.ui :as ui]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
-   [com.fulcrologic.fulcro.algorithms.denormalize :refer [db->tree]] 
+   [com.fulcrologic.fulcro.algorithms.denormalize :refer [db->tree]]
+   [com.fulcrologic.fulcro.application :as app]
    [com.fulcrologic.fulcro.components :as comp]
    [com.fulcrologic.fulcro.dom-server :as dom]
    [com.fulcrologic.fulcro.server.api-middleware :as s :refer [wrap-transit-params wrap-transit-response]]
    [mount.core :as m :refer [defstate]]
    [ring.adapter.jetty :refer [run-jetty]]
    [ring.util.mime-type :refer [default-mime-types]]
-   [ring.util.response :as res] 
+   [ring.util.response :as res]
    [reitit.ring :as rr]
    [reitit.middleware :as-alias rmw]
    [reitit.ring.middleware.exception :as rrex]))
@@ -26,23 +27,20 @@
     (map #(str/upper-case (name (key %))))
     (str/join ", ")))
 
+(defn initial-state [root]
+  (ssr/build-initial-state (comp/get-initial-state root) root))
+
 (def page-handler
   (constantly
-    (let [db (-> (ssr/build-initial-state (comp/get-initial-state ui/Root) ui/Root)
+    (let [root ui/Root
+          db (-> (initial-state root)
                (assoc :email (:kyleerhabor.treehouse.media/email config)))
-          props (db->tree (comp/get-query ui/Root) db db)
-          ;; In the Fulcro docs, comp/*app* is bound before rendering. The server is written in .clj, however, and my
-          ;; app is in .cljs (since it uses remotes). Hopefully this won't cause issues.
-          html (dom/render-to-str (ui/document db props))]
-      (-> (str doctype html)
-        ;; Fulcro escapes quotes, which is annoying here since I need to embed JavaScript in the code. I'd like to use
-        ;; ssr/initial-state->script-tag, but it returns a string, which can't be embedded in the HTML head with
-        ;; :dangerouslySetInnerHTML without introducing a non-valid element (e.g. div). The alternative would be
-        ;; building raw HTML (i.e. using strings instead of dom/...), which would be worse. If Fulcro had a special type
-        ;; for preserving characters (like Hiccup does), this would be simpler.
-        (str/replace #"window\.INITIAL_APP_STATE = &quot;(.+)&quot;" (fn [[_ s]]
-                                                                       (str "window.INITIAL_APP_STATE = \"" s \")))
-        res/response
+          props (db->tree (comp/get-query root db) db db)
+          app (app/fulcro-app {:initial-db db})
+          ;; Routing is client-only, which is annoying for this use case. Maybe reitit can help?
+          html (binding [comp/*app* app]
+                 (dom/render-to-str (ui/ui-document props)))]
+      (-> (res/response (str doctype html))
         (res/content-type (get default-mime-types "html"))))))
 
 (defn api-handler [{query :transit-params}]
