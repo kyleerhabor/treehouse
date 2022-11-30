@@ -9,14 +9,15 @@
    [#?(:clj com.fulcrologic.fulcro.dom-server
        :cljs com.fulcrologic.fulcro.dom) :as dom]
    [com.fulcrologic.fulcro.routing.dynamic-routing :refer [defrouter]]
-   [com.fulcrologic.rad.routing :as r]
-   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]))
+   [com.fulcrologic.fulcro.ui-state-machines :as uism]
+   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]
+   [com.fulcrologic.rad.routing :as r]))
 
 (defn singleton [id]
   [::id id])
 
 (defsc Home [_ _]
-  {:query ['*]
+  {:query []
    :initial-state {}
    :ident (fn [] (singleton ::Home))
    :route-segment ["home"]}
@@ -25,15 +26,26 @@
     (dom/p "I'm Kyle Erhabor, a software developer known under the pseudonym Klay.")))
 
 (defsc Projects [_ _]
-  {:query ['*]
+  {:query []
    :initial-state {}
    :ident (fn [] (singleton ::Projects))
    :route-segment ["projects"]}
   (dom/div
     (dom/h1 "Projects")))
 
-(defrouter AppRouter [_ _]
-  {:router-targets [Home Projects]})
+(defsc Router [_ {:keys [state]}]
+  {:query [:state]}
+  (case state
+    :initial "?"
+    :pending "..."
+    :failed "!"
+    nil))
+
+(def ui-router (comp/factory Router))
+
+(defrouter AppRouter [_ {state :current-state}]
+  {:router-targets [Home Projects]}
+  (ui-router {:state state}))
 
 (def ui-app-router (comp/factory AppRouter))
 
@@ -63,15 +75,20 @@
 
 (defsc Heading [this {:keys [discord email github]}]
   {:query [[:email '_]
+           [::uism/asm-id '_]
            {[:discord '_] (comp/get-query Discord)}
            {[:github '_] (comp/get-query Github)}]
-   :initial-state {}}
+   :initial-state {}} 
   (dom/header
-    (dom/nav
-      (dom/ul
-        (dom/li
-          (dom/a {:onClick #(r/route-to! this Projects {})}
-            "Projects"))))
+    (if (uism/get-active-state this ::AppRouter)
+      (dom/nav
+        (dom/ul
+          (dom/li
+            (dom/button {:onClick #(r/route-to! this Home {})}
+              "Home"))
+          (dom/li
+            (dom/button {:onClick #(r/route-to! this Projects {})}
+              "Projects")))))
     (dom/nav
       (dom/address
         (dom/ul
@@ -106,7 +123,7 @@
 
 (def ui-root (comp/factory Root))
 
-(defsc Document [this props]
+(defsc Document [this props {:keys [token]}]
   (dom/html
     (dom/head
       (dom/meta {:charset "UTF-8"})
@@ -114,17 +131,17 @@
                  :content "width=device-width, initial-scale=1"})
       (dom/title "Kyle Erhabor")
       (dom/script {:dangerouslySetInnerHTML {:__html (str
-                                                       "window.INITIAL_APP_STATE = \""
-                                                       (base64-encode (transit-clj->str (app/current-state this)))
-                                                       "\";")}})
+                                                       "var fulcro_network_csrf_token=\"" token "\";"
+                                                       "window.INITIAL_APP_STATE=\"" (-> this
+                                                                                       app/current-state
+                                                                                       transit-clj->str
+                                                                                       base64-encode) "\"")}})
       ;; It's kind of annoying that Fulcro prepends a space when using :classes even when :className and .class aren't used.
       (style-element {:component Root
                       :garden-flags {:pretty-print? false}}))
     (dom/body
       (dom/div :#app
         (ui-root props))
-      ;; Theoretically, it would be nice to use shadow to pull the asset path and append main.js, but since this needs
-      ;; to be rendered on the server, it's unlikely that is possible.
       (dom/script {:src "/assets/main/js/compiled/main.js"}))))
 
-(def ui-document (comp/factory Document))
+(def ui-document (comp/computed-factory Document))

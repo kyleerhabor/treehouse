@@ -18,8 +18,8 @@
 (defn request
   ([url method] (request url method {}))
   ([url method req]
-   (:body (clj-http.client/request (merge default-request req {:url url
-                                                               :method method})))))
+   (:body (http/request (merge default-request req {:url url
+                                                    :method method})))))
 
 (defn get-current-user [token]
   (request current-user-url :get {:oauth-token token}))
@@ -52,7 +52,7 @@
   
   (defn refresh-token [refresh-token]
     (exchange (merge exchange-params {:type "refresh_token"
-                                      :code refresh-token})))
+                                      :refresh_token refresh-token})))
   
   (defn refresh-stored-token []
     (refresh-token (d/datom-v (db/latest-datom (d/datoms @db/conn :ave ::refresh-token))))))

@@ -3,7 +3,7 @@
    [clojure.string :as str]
    [kyleerhabor.treehouse.server.config :refer [config]]
    [kyleerhabor.treehouse.server.query :as eql]
-   [kyleerhabor.treehouse.server.response :refer [doctype internal-server-error method-not-allowed not-acceptable]]
+   [kyleerhabor.treehouse.server.response :refer [doctype forbidden internal-server-error method-not-allowed not-acceptable]]
    [kyleerhabor.treehouse.ui :as ui]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
    [com.fulcrologic.fulcro.algorithms.denormalize :refer [db->tree]]
@@ -13,6 +13,8 @@
    [com.fulcrologic.fulcro.server.api-middleware :as s :refer [wrap-transit-params wrap-transit-response]]
    [mount.core :as m :refer [defstate]]
    [ring.adapter.jetty :refer [run-jetty]]
+   [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
+   [ring.middleware.session :refer [wrap-session]]
    [ring.util.mime-type :refer [default-mime-types]]
    [ring.util.response :as res]
    [reitit.ring :as rr]
@@ -30,18 +32,15 @@
 (defn initial-state [root]
   (ssr/build-initial-state (comp/get-initial-state root) root))
 
-(def page-handler
-  (constantly
-    (let [root ui/Root
-          db (-> (initial-state root)
-               (assoc :email (:kyleerhabor.treehouse.media/email config)))
-          props (db->tree (comp/get-query root db) db db)
-          app (app/fulcro-app {:initial-db db})
-          ;; Routing is client-only, which is annoying for this use case. Maybe reitit can help?
-          html (binding [comp/*app* app]
-                 (dom/render-to-str (ui/ui-document props)))]
-      (-> (res/response (str doctype html))
-        (res/content-type (get default-mime-types "html"))))))
+(defn page-handler [request]
+  (let [root ui/Root
+        db (assoc (initial-state root) :email (:kyleerhabor.treehouse.media/email config))
+        props (db->tree (comp/get-query root db) db db)
+        app (app/fulcro-app {:initial-db db})
+        html (binding [comp/*app* app]
+               (dom/render-to-str (ui/ui-document props {:token (:anti-forgery-token request)})))]
+    (-> (res/response (str doctype html))
+      (res/content-type (get default-mime-types "html")))))
 
 (defn api-handler [{query :transit-params}]
   (let [r (eql/parse query)]
@@ -57,9 +56,11 @@
 
 (def router (rr/router routes
               {::rr/default-options-endpoint default-options-endpoint
-               ::rmw/registry {:transit-params [wrap-transit-params {:malformed-response (res/bad-request nil)}]
-                               :transit-response wrap-transit-response
-                               :exception exception-middleware}
+               ::rmw/registry {:csrf [wrap-anti-forgery {:error-response forbidden}]
+                               :exception exception-middleware
+                               :session wrap-session
+                               :transit-params [wrap-transit-params {:malformed-response (res/bad-request nil)}]
+                               :transit-response wrap-transit-response}
                :data {:middleware [:exception]}}))
 
 (def default-handler-options
@@ -68,7 +69,14 @@
 
 (def default-routes [["*" {:get page-handler}]])
 
-(def default-router (rr/router default-routes {::rr/default-options-endpoint default-options-endpoint}))
+(def default-router (rr/router default-routes
+                      {::rr/default-options-endpoint default-options-endpoint
+                       ::rmw/registry {:csrf [wrap-anti-forgery {:error-response forbidden}]
+                                       :exception exception-middleware
+                                       :session wrap-session}
+                       :data {:middleware [[:csrf]
+                                           [:session]
+                                           [:exception]]}}))
 
 (def default-handler (rr/ring-handler default-router
                        ;; As the default route accepts any route, it should be impossible to return a not found response.

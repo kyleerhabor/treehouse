@@ -12,17 +12,15 @@
 
 (defn init []
   (reset! (::app/state-atom app) (ssr/get-SSR-initial-state))
-  (app/set-root! app ui/Root {:initialize-state? true}) 
+  (app/set-root! app ui/Root {:initialize-state? true})
   (route/initialize! app)
   (install-route-history! app (new-html5-history {:app app}))
   (restore-route! app ui/Home {})
   (load! app :discord ui/Discord)
   (load! app :github ui/Github)
   (mount {:hydrate? true
-          :initialize-state? false})
-  (println "Hydrated!"))
+          :initialize-state? false}))
 
 (defn refresh []
   (mount)
-  (comp/refresh-dynamic-queries! app)
-  (println "Reloaded!"))
+  (comp/refresh-dynamic-queries! app))

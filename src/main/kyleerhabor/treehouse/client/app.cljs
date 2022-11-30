@@ -1,9 +1,9 @@
 (ns kyleerhabor.treehouse.client.app
-  (:require 
+  (:require
    [kyleerhabor.treehouse.ui :as ui]
    [com.fulcrologic.fulcro.application :as app]
-   [com.fulcrologic.fulcro.networking.http-remote :as http]))
+   [com.fulcrologic.rad.application :refer [fulcro-rad-app]]))
 
-(defonce app (app/fulcro-app {:remotes {:remote (http/fulcro-http-remote {})}}))
+(defonce app (fulcro-rad-app {}))
 
 (def mount (partial app/mount! app ui/Root "app"))
