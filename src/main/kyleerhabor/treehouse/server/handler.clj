@@ -1,6 +1,5 @@
 (ns kyleerhabor.treehouse.server.handler
   (:require
-   [kyleerhabor.treehouse.model :as-alias model]
    [kyleerhabor.treehouse.model.media :as-alias media]
    [kyleerhabor.treehouse.route.common :refer [route]]
    [kyleerhabor.treehouse.server.config :refer [config]]
@@ -23,7 +22,7 @@
 (defn current-state [db match]
   (assoc db
     ::media/email (::media/email config)
-    ::model/route (route match)))
+    :route (route match)))
 
 (defn page-handler [request]
   (let [root ui/Root

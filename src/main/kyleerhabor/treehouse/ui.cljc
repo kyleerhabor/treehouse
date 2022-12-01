@@ -1,11 +1,10 @@
 (ns kyleerhabor.treehouse.ui
   (:require
-   [kyleerhabor.treehouse.model :as-alias model]
    [kyleerhabor.treehouse.model.media :as-alias media]
    [kyleerhabor.treehouse.model.route :as-alias route]
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
-   [kyleerhabor.treehouse.mutation :as mut]
+   [kyleerhabor.treehouse.route :refer [href+]]
    [com.fulcrologic.fulcro.application :as app]
    [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
    [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]]
@@ -27,6 +26,8 @@
 (defsc Projects [_ _]
   (dom/div
     (dom/h1 "Projects")))
+
+(def ui-projects (comp/factory Projects))
 
 (defsc GithubUser [_ _]
   {:query [::gu/id ::gu/url]
@@ -52,8 +53,8 @@
 
 (def ui-discord-heading (comp/factory DiscordHeading))
 
-(defsc Heading [this {::media/keys [email]
-                      :keys [discord github]}]
+(defsc Heading [_ {::media/keys [email]
+                   :keys [discord github]}]
   {:query [[::media/email '_]
            {[:discord '_] (comp/get-query DiscordUser)}
            {[:github '_] (comp/get-query GithubUser)}]
@@ -63,10 +64,10 @@
       (dom/ul
         ;; TODO: Use a mutation to simulate routing.
         (dom/li
-          (dom/button {:onClick #(comp/transact! this [(mut/route {::route/name :home})])}
+          (dom/a {:href (href+ :home)}
             "Home"))
         (dom/li
-          (dom/button {:onClick #(comp/transact! this [(mut/route {::route/name :projects})])}
+          (dom/a {:href (href+ :projects)}
             "Projects")))) 
     (dom/nav
       (dom/address
@@ -89,13 +90,14 @@
   {:query [::route/name]}
   (case name
     :home (ui-home {})
+    :projects (ui-projects {})
     "?"))
 
 (def ui-router (comp/factory Router))
 
-(defsc App [_ {::model/keys [route]
-               ::keys [heading]}]
-  {:query [[::model/route '_]
+(defsc App [_ {::keys [heading]
+               :keys [route]}]
+  {:query [[:route '_]
            {::heading (comp/get-query Heading)}]
    :initial-state (fn [_] {::heading (comp/get-initial-state Heading)})}
   (dom/div

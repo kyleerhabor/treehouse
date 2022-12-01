@@ -1,5 +1,6 @@
 (ns kyleerhabor.treehouse.route
   (:require
+   [reitit.core :as r]
    #?@(:clj [[clojure.string :as str]
              [kyleerhabor.treehouse.server.handler :refer [api-handler page-handler]]
              [kyleerhabor.treehouse.server.response :refer [internal-server-error]]
@@ -39,3 +40,11 @@
                                                                        :transit-params [wrap-transit-params {:malformed-response (res/bad-request nil)}]
                                                                        :transit-response wrap-transit-response}
                                           :data {:middleware [:exception]}})))
+
+(defn href
+  ([router name] (href router name nil))
+  ([router name path] (href router name path nil))
+  ([router name path query]
+   (r/match->path (r/match-by-name! router name path) query)))
+
+(def href+ (partial href router))
