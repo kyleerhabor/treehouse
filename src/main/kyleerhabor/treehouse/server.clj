@@ -1,88 +1,14 @@
 (ns kyleerhabor.treehouse.server
   (:require
-   [clojure.string :as str]
+   [kyleerhabor.treehouse.route :as r]
    [kyleerhabor.treehouse.server.config :refer [config]]
-   [kyleerhabor.treehouse.server.query :as eql]
-   [kyleerhabor.treehouse.server.response :refer [doctype forbidden internal-server-error method-not-allowed not-acceptable]]
-   [kyleerhabor.treehouse.ui :as ui]
-   [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
-   [com.fulcrologic.fulcro.algorithms.denormalize :refer [db->tree]]
-   [com.fulcrologic.fulcro.application :as app]
-   [com.fulcrologic.fulcro.components :as comp]
-   [com.fulcrologic.fulcro.dom-server :as dom]
-   [com.fulcrologic.fulcro.server.api-middleware :as s :refer [wrap-transit-params wrap-transit-response]]
+   [kyleerhabor.treehouse.server.response :refer [method-not-allowed not-acceptable]]
    [mount.core :as m :refer [defstate]]
-   [ring.adapter.jetty :refer [run-jetty]]
-   [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
-   [ring.middleware.session :refer [wrap-session]]
-   [ring.util.mime-type :refer [default-mime-types]]
-   [ring.util.response :as res]
    [reitit.ring :as rr]
-   [reitit.middleware :as-alias rmw]
-   [reitit.ring.middleware.exception :as rrex]))
+   [ring.adapter.jetty :refer [run-jetty]]
+   [ring.util.response :as res]))
 
-(defn allowed
-  "Returns a comma-separated string of the request methods supported by a request."
-  [request]
-  (->> (:result (rr/get-match request))
-    (filter val)
-    (map #(str/upper-case (name (key %))))
-    (str/join ", ")))
-
-(defn initial-state [root]
-  (ssr/build-initial-state (comp/get-initial-state root) root))
-
-(defn page-handler [request]
-  (let [root ui/Root
-        db (assoc (initial-state root) :email (:kyleerhabor.treehouse.media/email config))
-        props (db->tree (comp/get-query root db) db db)
-        app (app/fulcro-app {:initial-db db})
-        html (binding [comp/*app* app]
-               (dom/render-to-str (ui/ui-document props {:token (:anti-forgery-token request)})))]
-    (-> (res/response (str doctype html))
-      (res/content-type (get default-mime-types "html")))))
-
-(defn api-handler [{query :transit-params}]
-  (let [r (eql/parse query)]
-    (s/generate-response (merge (res/response r) (s/apply-response-augmentations r)))))
-
-(def routes [["/api" {:post {:handler api-handler
-                             :middleware [[:transit-params]
-                                          [:transit-response]]}}]])
-
-(def exception-middleware (rrex/create-exception-middleware {::rrex/default (constantly internal-server-error)}))
-
-(def default-options-endpoint {:handler (comp res/response allowed)})
-
-(def router (rr/router routes
-              {::rr/default-options-endpoint default-options-endpoint
-               ::rmw/registry {:csrf [wrap-anti-forgery {:error-response forbidden}]
-                               :exception exception-middleware
-                               :session wrap-session
-                               :transit-params [wrap-transit-params {:malformed-response (res/bad-request nil)}]
-                               :transit-response wrap-transit-response}
-               :data {:middleware [:exception]}}))
-
-(def default-handler-options
-  {:method-not-allowed (comp method-not-allowed allowed)
-   :not-acceptable (constantly not-acceptable)})
-
-(def default-routes [["*" {:get page-handler}]])
-
-(def default-router (rr/router default-routes
-                      {::rr/default-options-endpoint default-options-endpoint
-                       ::rmw/registry {:csrf [wrap-anti-forgery {:error-response forbidden}]
-                                       :exception exception-middleware
-                                       :session wrap-session}
-                       :data {:middleware [[:csrf]
-                                           [:session]
-                                           [:exception]]}}))
-
-(def default-handler (rr/ring-handler default-router
-                       ;; As the default route accepts any route, it should be impossible to return a not found response.
-                       (rr/create-default-handler default-handler-options)))
-
-(def handler (rr/ring-handler router
+(def handler (rr/ring-handler r/router
                (rr/routes
                  ;; Shadow produces a main.js file which is meant to be consumed by the user when loading the page. In
                  ;; development, however, it also produces a cljs-runtime folder, which is not required for release mode.
@@ -96,7 +22,9 @@
                  ;; Another solution may be to purge the cljs-runtime folder when compiling under release mode, though
                  ;; this would be slightly more complicated and annoying when switching back to development mode.
                  (rr/create-resource-handler {:path "/"})
-                 (rr/create-default-handler (assoc default-handler-options :not-found default-handler)))))
+                 (rr/create-default-handler {:not-found (constantly (res/not-found nil))
+                                             :method-not-allowed (comp method-not-allowed r/allowed)
+                                             :not-acceptable (constantly not-acceptable)}))))
 
 (defstate server
   :start (run-jetty handler {:port (::port config)

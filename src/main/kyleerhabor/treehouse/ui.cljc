@@ -1,55 +1,34 @@
 (ns kyleerhabor.treehouse.ui
   (:require
+   [kyleerhabor.treehouse.model :as-alias model]
+   [kyleerhabor.treehouse.model.media :as-alias media]
+   [kyleerhabor.treehouse.model.route :as-alias route]
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
+   [kyleerhabor.treehouse.mutation :as mut]
    [com.fulcrologic.fulcro.application :as app]
    [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
    [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]]
    [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
    [#?(:clj com.fulcrologic.fulcro.dom-server
        :cljs com.fulcrologic.fulcro.dom) :as dom]
-   [com.fulcrologic.fulcro.routing.dynamic-routing :refer [defrouter]]
-   [com.fulcrologic.fulcro.ui-state-machines :as uism]
-   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]
-   [com.fulcrologic.rad.routing :as r]))
+   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]))
 
 (defn singleton [id]
   [::id id])
 
 (defsc Home [_ _]
-  {:query []
-   :initial-state {}
-   :ident (fn [] (singleton ::Home))
-   :route-segment ["home"]}
   (dom/div
     (dom/h1 "Hello!")
     (dom/p "I'm Kyle Erhabor, a software developer known under the pseudonym Klay.")))
 
+(def ui-home (comp/factory Home))
+
 (defsc Projects [_ _]
-  {:query []
-   :initial-state {}
-   :ident (fn [] (singleton ::Projects))
-   :route-segment ["projects"]}
   (dom/div
     (dom/h1 "Projects")))
 
-(defsc Router [_ {:keys [state]}]
-  {:query [:state]}
-  (case state
-    :initial "?"
-    :pending "..."
-    :failed "!"
-    nil))
-
-(def ui-router (comp/factory Router))
-
-(defrouter AppRouter [_ {state :current-state}]
-  {:router-targets [Home Projects]}
-  (ui-router {:state state}))
-
-(def ui-app-router (comp/factory AppRouter))
-
-(defsc Github [_ _]
+(defsc GithubUser [_ _]
   {:query [::gu/id ::gu/url]
    :ident ::gu/id})
 
@@ -61,7 +40,7 @@
 
 (def ui-github-heading (comp/factory GithubHeading))
 
-(defsc Discord [_ _]
+(defsc DiscordUser [_ _]
   {:query [::du/id ::du/username ::du/discriminator]
    :ident ::du/id})
 
@@ -73,22 +52,22 @@
 
 (def ui-discord-heading (comp/factory DiscordHeading))
 
-(defsc Heading [this {:keys [discord email github]}]
-  {:query [[:email '_]
-           [::uism/asm-id '_]
-           {[:discord '_] (comp/get-query Discord)}
-           {[:github '_] (comp/get-query Github)}]
+(defsc Heading [this {::media/keys [email]
+                      :keys [discord github]}]
+  {:query [[::media/email '_]
+           {[:discord '_] (comp/get-query DiscordUser)}
+           {[:github '_] (comp/get-query GithubUser)}]
    :initial-state {}} 
   (dom/header
-    (if (uism/get-active-state this ::AppRouter)
-      (dom/nav
-        (dom/ul
-          (dom/li
-            (dom/button {:onClick #(r/route-to! this Home {})}
-              "Home"))
-          (dom/li
-            (dom/button {:onClick #(r/route-to! this Projects {})}
-              "Projects")))))
+    (dom/nav
+      (dom/ul
+        ;; TODO: Use a mutation to simulate routing.
+        (dom/li
+          (dom/button {:onClick #(comp/transact! this [(mut/route {::route/name :home})])}
+            "Home"))
+        (dom/li
+          (dom/button {:onClick #(comp/transact! this [(mut/route {::route/name :projects})])}
+            "Projects")))) 
     (dom/nav
       (dom/address
         (dom/ul
@@ -105,14 +84,23 @@
 
 (def ui-heading (comp/factory Heading))
 
-(defsc App [_ {::keys [heading router]}]
-  {:query [{::heading (comp/get-query Heading)}
-           {::router (comp/get-query AppRouter)}]
-   :initial-state (fn [_] {::heading (comp/get-initial-state Heading)
-                           ::router (comp/get-initial-state AppRouter)})}
+(defsc Router [_ {::route/keys [name]}]
+  ;; There's also ::route/path and ::route/query
+  {:query [::route/name]}
+  (case name
+    :home (ui-home {})
+    "?"))
+
+(def ui-router (comp/factory Router))
+
+(defsc App [_ {::model/keys [route]
+               ::keys [heading]}]
+  {:query [[::model/route '_]
+           {::heading (comp/get-query Heading)}]
+   :initial-state (fn [_] {::heading (comp/get-initial-state Heading)})}
   (dom/div
     (ui-heading heading)
-    (ui-app-router router)))
+    (ui-router route)))
 
 (def ui-app (comp/factory App))
 
