@@ -4,14 +4,14 @@
    [kyleerhabor.treehouse.model.route :as-alias route]
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
+   [kyleerhabor.treehouse.route :refer [href+]]
    [com.fulcrologic.fulcro.application :as app]
    [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
    [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]]
    [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
    [#?(:clj com.fulcrologic.fulcro.dom-server
        :cljs com.fulcrologic.fulcro.dom) :as dom]
-   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]
-   #?(:cljs [kyleerhabor.treehouse.route :refer [href+]])))
+   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]))
 
 (defn singleton [id]
   [::id id])
@@ -61,14 +61,13 @@
    :initial-state {}} 
   (dom/header
     (dom/nav
-      #?(:cljs
-         (dom/ul 
-           (dom/li
-             (dom/a {:href (href+ :home)}
-               "Home"))
-           (dom/li
-             (dom/a {:href (href+ :projects)}
-               "Projects"))))) 
+      (dom/ul
+        (dom/li
+          (dom/a {:href (href+ :home)}
+            "Home"))
+        (dom/li
+          (dom/a {:href (href+ :projects)}
+            "Projects")))) 
     (dom/nav
       (dom/address
         (dom/ul
