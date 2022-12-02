@@ -2,8 +2,7 @@
   (:require
    [kyleerhabor.treehouse.client.app :refer [app mount]]
    [kyleerhabor.treehouse.mutation :as mut]
-   [kyleerhabor.treehouse.route :refer [router]]
-   [kyleerhabor.treehouse.route.common :refer [route]]
+   [kyleerhabor.treehouse.route :refer [route router]]
    [kyleerhabor.treehouse.ui :as ui]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
    [com.fulcrologic.fulcro.application :as app]

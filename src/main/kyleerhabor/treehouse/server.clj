@@ -1,8 +1,8 @@
 (ns kyleerhabor.treehouse.server
   (:require
-   [kyleerhabor.treehouse.route :as r]
    [kyleerhabor.treehouse.server.config :refer [config]]
    [kyleerhabor.treehouse.server.response :refer [method-not-allowed not-acceptable]]
+   [kyleerhabor.treehouse.server.route :as r]
    [mount.core :as m :refer [defstate]]
    [reitit.ring :as rr]
    [ring.adapter.jetty :refer [run-jetty]]

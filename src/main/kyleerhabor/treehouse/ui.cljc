@@ -4,14 +4,14 @@
    [kyleerhabor.treehouse.model.route :as-alias route]
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
-   [kyleerhabor.treehouse.route :refer [href+]]
    [com.fulcrologic.fulcro.application :as app]
    [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
    [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]]
    [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
    [#?(:clj com.fulcrologic.fulcro.dom-server
        :cljs com.fulcrologic.fulcro.dom) :as dom]
-   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]))
+   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]
+   #?(:cljs [kyleerhabor.treehouse.route :refer [href+]])))
 
 (defn singleton [id]
   [::id id])
@@ -61,14 +61,14 @@
    :initial-state {}} 
   (dom/header
     (dom/nav
-      (dom/ul
-        ;; TODO: Use a mutation to simulate routing.
-        (dom/li
-          (dom/a {:href (href+ :home)}
-            "Home"))
-        (dom/li
-          (dom/a {:href (href+ :projects)}
-            "Projects")))) 
+      #?(:cljs
+         (dom/ul 
+           (dom/li
+             (dom/a {:href (href+ :home)}
+               "Home"))
+           (dom/li
+             (dom/a {:href (href+ :projects)}
+               "Projects"))))) 
     (dom/nav
       (dom/address
         (dom/ul
@@ -113,19 +113,17 @@
 
 (def ui-root (comp/factory Root))
 
-(defsc Document [this props {:keys [token]}]
+(defsc Document [this props]
   (dom/html
     (dom/head
       (dom/meta {:charset "UTF-8"})
       (dom/meta {:name "viewport"
                  :content "width=device-width, initial-scale=1"})
       (dom/title "Kyle Erhabor")
-      (dom/script {:dangerouslySetInnerHTML {:__html (str
-                                                       "var fulcro_network_csrf_token=\"" token "\";"
-                                                       "window.INITIAL_APP_STATE=\"" (-> this
-                                                                                       app/current-state
-                                                                                       transit-clj->str
-                                                                                       base64-encode) "\"")}})
+      (dom/script {:dangerouslySetInnerHTML {:__html (str "window.INITIAL_APP_STATE=\"" (-> this
+                                                                                          app/current-state
+                                                                                          transit-clj->str
+                                                                                          base64-encode) "\"")}})
       ;; It's kind of annoying that Fulcro prepends a space when using :classes even when :className and .class aren't used.
       (style-element {:component Root
                       :garden-flags {:pretty-print? false}}))
