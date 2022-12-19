@@ -9,8 +9,7 @@
 
 (defn query [q]
   (:body (http/post api-url {:body (json/write-str {:query (g/graphql-query q)})
-                             ;; The token is actually a personal access token, but :oauth-token produces the correct
-                             ;; header.
+                             ;; This is actually a personal access token, but :oauth-token produces the correct header.
                              :oauth-token (::token config)
                              :as :json})))
 

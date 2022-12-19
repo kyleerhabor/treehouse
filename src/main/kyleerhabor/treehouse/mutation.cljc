@@ -1,7 +1,22 @@
+;; TODO: Transform this namespace into one for convenience via `declare-mutation`.
 (ns kyleerhabor.treehouse.mutation
-  (:require [com.fulcrologic.fulcro.mutations :as mut :refer [defmutation]]))
+  (:require
+   [kyleerhabor.treehouse.ui :as ui]
+   [com.fulcrologic.fulcro.algorithms.data-targeting :as target]
+   [com.fulcrologic.fulcro.mutations :refer [defmutation]]
+   [com.fulcrologic.fulcro.components :as comp]))
 
-;; TODO: Have this serve only as a convenience namespace (i.e. only redeclare symbols)
+(defn route* [db route]
+  (let [ident (comp/get-ident ui/Router route)]
+    (-> db
+      (assoc-in ident route)
+      (target/integrate-ident* ident :replace [::ui/app :route]))))
+
+(defn remove-route* [db]
+  (update db ::ui/app dissoc :route))
+
 (defmutation route [route]
   (action [{:keys [state]}]
-    (swap! state assoc :route route)))
+    (if route
+      (swap! state route* route)
+      (swap! state remove-route*))))

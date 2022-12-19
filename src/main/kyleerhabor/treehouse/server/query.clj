@@ -2,12 +2,15 @@
   (:require
    [clojure.core.cache.wrapped :as cache]
    [clojure.set :refer [rename-keys]]
+   [kyleerhabor.treehouse.model.project :as-alias project]
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
+   [kyleerhabor.treehouse.server.database :as db]
    [kyleerhabor.treehouse.server.remote.discord :as discord]
    [kyleerhabor.treehouse.server.remote.github :as github]
    [com.wsscode.pathom.core :as p]
    [com.wsscode.pathom.connect :as pc :refer [defresolver]]
+   [datalevin.core :as d]
    [tick.core :as tick]))
 
 ;; Would like to improve this in the future.
@@ -34,7 +37,15 @@
   {:github (rename-keys (current-github-user) {:id ::gu/id
                                                :url ::gu/url})})
 
-(def registry [discord github])
+(defresolver projects [{::keys [db]} _]
+  {::pc/output [{:projects [::project/id]}]}
+  {:projects (map (fn [datom] {::project/id (d/datom-v datom)}) (d/datoms db :ave ::project/id))})
+
+(defresolver project-name [{::keys [db]} {::project/keys [id]}]
+  {::pc/output [::project/name]}
+  (select-keys (d/entity db [::project/id id]) [::project/name]))
+
+(def registry [discord github projects project-name])
 
 (def parser (p/parser {::p/env {::p/reader [p/map-reader pc/reader2 pc/ident-reader pc/index-reader]
                                 ::pc/mutation-join-globals [:tempids]}
@@ -44,4 +55,4 @@
                                     p/elide-special-outputs-plugin]}))
 
 (defn parse [query]
-  (parser {} query))
+  (parser {::db @db/conn} query))

@@ -1,20 +1,44 @@
+;; NOTE: This namespace will likely be moved under the ui one.
 (ns kyleerhabor.treehouse.route
   (:require
-   [kyleerhabor.treehouse.model.route :as-alias route]
-   [reitit.core :as r]))
+   [kyleerhabor.treehouse.schema :as s]
+   [kyleerhabor.treehouse.model.project :as-alias project]
+   [kyleerhabor.treehouse.ui :as-alias ui]
+   [reitit.core :as r]
+   [reitit.coercion :as rc]
+   [reitit.coercion.malli :refer [coercion]]))
 
-(defn route [match]
-  (let [{{:keys [name]} :data
-         :keys [query-params path-params]} match]
-    (cond-> {::route/name name
-             ::route/path path-params}
-      query-params (assoc ::route/query query-params))))
+;; It is likely that this namespace will run into circular dependency issues in the future due to the UI's need of the
+;; router to create hrefs.
 
-(def routes [["/" :home]
+(defn props [{{{:keys [props]} :ui} :data
+              :as match}]
+  (props match))
+
+(def routes [["/" {:name :home
+                   :ui {:props (constantly {::ui/id ::ui/Home})}}]
              ["/api" :api]
-             ["/projects" :projects]])
+             ["/projects" {:name :projects
+                           :ui {:props (constantly {::ui/id ::ui/Projects})}}]
+             ["/projects/:id" {:name :project
+                               :coercion coercion
+                               :parameters {:path [:map
+                                                   [:id s/ID]]}
+                               :ui {:props (fn [{{{:keys [id]} :path} :parameters}]
+                                             {::project/id id})}}]])
 
-(def router (r/router routes))
+(defn merge-expand [registry]
+  (fn [data opts]
+    (let [expand #(r/expand % opts)
+          data* (expand data)]
+      (if-let [name (:name data*)]
+        (merge-with into data* (expand (name registry)))
+        ;; Entry in map has no name for some reason, just ignore.
+        data*))))
+
+(def options {:compile rc/compile-request-coercers})
+
+(def router (r/router routes options))
 
 (defn href
   ([router name] (href router name nil))

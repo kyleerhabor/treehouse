@@ -2,10 +2,11 @@
   (:require
    [clojure.string :as str]
    [kyleerhabor.treehouse.model.media :as-alias media]
+   [kyleerhabor.treehouse.mutation :as mut]
    [kyleerhabor.treehouse.route :as route]
    [kyleerhabor.treehouse.server.config :refer [config]]
    [kyleerhabor.treehouse.server.query :as eql]
-   [kyleerhabor.treehouse.server.response :refer [doctype internal-server-error]]
+   [kyleerhabor.treehouse.server.response :refer [doctype]]
    [kyleerhabor.treehouse.ui :as ui]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
    [com.fulcrologic.fulcro.algorithms.denormalize :refer [db->tree]]
@@ -13,9 +14,9 @@
    [com.fulcrologic.fulcro.components :as comp]
    [com.fulcrologic.fulcro.dom-server :as dom]
    [com.fulcrologic.fulcro.server.api-middleware :as s :refer [wrap-transit-params wrap-transit-response]]
-   [reitit.core :as r]
    [reitit.middleware :as-alias rmw]
    [reitit.ring :as rr]
+   [reitit.ring.coercion :as rrc]
    [reitit.ring.middleware.exception :as rrex]
    [ring.util.mime-type :refer [default-mime-types]]
    [ring.util.response :as res]))
@@ -28,31 +29,20 @@
     (map #(str/upper-case (name (key %))))
     (str/join ", ")))
 
-(defn merge-expand [registry]
-  (fn [data opts]
-    (let [expand #(r/expand % opts)
-          data* (expand data)]
-      (if-let [name (:name data*)]
-        (merge data* (expand (name registry))) ; Maybe do a deep merge?
-        ;; Entry in map has no name for some reason, just don't bother.
-        data*))))
-
-(defn initial-state [root]
+(defn initial-db [root]
   (ssr/build-initial-state (comp/get-initial-state root) root))
 
 (def root ui/Root)
 
-(def root-initial-state (initial-state root))
+(def root-initial-db (initial-db root))
 
-(defn current-state [db match]
-  (assoc db
-    ::media/email (::media/email config)
-    :route (route/route match)))
+;; This could potentially be simpler, since config and match don't *really* need to be *in* there.
+(defn current-db [db match]
+  (cond-> (assoc db :email (::media/email config))
+    match (mut/route* (route/props match))))
 
-;; This could be faster as the router already knows what page it's on, making the need to compute the request
-;; unnecessary and potentially making the page handler response instant.
 (defn page-handler [request]
-  (let [db (current-state root-initial-state (rr/get-match request))
+  (let [db (current-db root-initial-db (rr/get-match request))
         props (db->tree (comp/get-query root db) db db)
         app (app/fulcro-app {:initial-db db})
         html (binding [comp/*app* app]
@@ -64,18 +54,20 @@
   (let [r (eql/parse query)]
     (s/generate-response (merge (res/response r) (s/apply-response-augmentations r)))))
 
-(def routes {:home {:get page-handler}
+(def routes {:home {:get {:handler page-handler}}
              :api {:post {:handler api-handler
                           :middleware [[:transit-params]
                                        [:transit-response]]}}
-             :projects {:get page-handler}})
+             :projects {:get {:handler page-handler}}
+             :project {:get {:handler page-handler}}})
 
-(def exception-middleware (rrex/create-exception-middleware {::rrex/default (constantly internal-server-error)}))
+(def exception-middleware (rrex/create-exception-middleware {::rrex/default #(page-handler %2)}))
 
 (def router (rr/router route/routes
-              {:expand (merge-expand routes)
-               ::rr/default-options-endpoint {:handler (comp res/response allowed)}
-               ::rmw/registry {:exception exception-middleware
-                               :transit-params [wrap-transit-params {:malformed-response (res/bad-request nil)}]
-                               :transit-response wrap-transit-response}
-               :data {:middleware [:exception]}}))
+              (merge (dissoc route/options :compile)
+                {:data {:middleware [rrc/coerce-request-middleware
+                                     exception-middleware]}
+                 :expand (route/merge-expand routes)
+                 ::rmw/registry {:transit-params [wrap-transit-params {:malformed-response (res/bad-request nil)}]
+                                 :transit-response wrap-transit-response}
+                 ::rr/default-options-endpoint {:handler (comp res/response allowed)}})))

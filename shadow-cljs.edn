@@ -1,4 +1,4 @@
-{:deps {:aliases [:cljs]}
+{:deps {:aliases [:client]}
  :builds {:main {:target :browser
                  :output-dir "resources/public/assets/main/js/compiled"
                  :asset-path "/assets/main/js/compiled"

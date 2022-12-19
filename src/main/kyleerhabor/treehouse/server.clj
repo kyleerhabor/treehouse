@@ -1,12 +1,11 @@
 (ns kyleerhabor.treehouse.server
   (:require
    [kyleerhabor.treehouse.server.config :refer [config]]
-   [kyleerhabor.treehouse.server.response :refer [method-not-allowed not-acceptable]]
+   [kyleerhabor.treehouse.server.response :refer [method-not-allowed]]
    [kyleerhabor.treehouse.server.route :as r]
    [mount.core :as m :refer [defstate]]
    [reitit.ring :as rr]
-   [ring.adapter.jetty :refer [run-jetty]]
-   [ring.util.response :as res]))
+   [ring.adapter.jetty :refer [run-jetty]]))
 
 (def handler (rr/ring-handler r/router
                (rr/routes
@@ -22,9 +21,9 @@
                  ;; Another solution may be to purge the cljs-runtime folder when compiling under release mode, though
                  ;; this would be slightly more complicated and annoying when switching back to development mode.
                  (rr/create-resource-handler {:path "/"})
-                 (rr/create-default-handler {:not-found (constantly (res/not-found nil))
+                 (rr/create-default-handler {:not-found r/page-handler
                                              :method-not-allowed (comp method-not-allowed r/allowed)
-                                             :not-acceptable (constantly not-acceptable)}))))
+                                             :not-acceptable r/page-handler}))))
 
 (defstate server
   :start (run-jetty handler {:port (::port config)

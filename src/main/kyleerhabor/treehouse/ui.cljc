@@ -1,7 +1,6 @@
 (ns kyleerhabor.treehouse.ui
   (:require
-   [kyleerhabor.treehouse.model.media :as-alias media]
-   [kyleerhabor.treehouse.model.route :as-alias route]
+   [kyleerhabor.treehouse.model.project :as-alias project]
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
    [kyleerhabor.treehouse.route :refer [href+]]
@@ -17,6 +16,9 @@
   [::id id])
 
 (defsc Home [_ _]
+  {:query [::id]
+   :ident (fn [] (singleton ::Home))
+   :initial-state {}}
   (dom/div
     (dom/h1 "Hello!")
     (dom/p "I'm Kyle Erhabor, a software developer known under the pseudonym Klay.")))
@@ -24,10 +26,44 @@
 (def ui-home (comp/factory Home))
 
 (defsc Projects [_ _]
+  {:query [::id]
+   :ident (fn [] (singleton ::Projects))
+   :initial-state {}}
   (dom/div
     (dom/h1 "Projects")))
 
 (def ui-projects (comp/factory Projects))
+
+(defsc Project [_ {::project/keys [name]}]
+  {:query [::project/id ::project/name]
+   :ident ::project/id}
+  (dom/main
+    (dom/h1 name)))
+
+(def ui-project (comp/factory Project))
+
+(defsc NotFound [_ _]
+  (dom/p "?"))
+
+(def ui-not-found (comp/factory NotFound))
+
+(defsc Router [this props]
+  {:query (fn [] {::Home (comp/get-query Home)
+                  ::Projects (comp/get-query Projects)
+                  ::project/id (comp/get-query Project)})
+   :ident (fn []
+            (if-let [single (::id props)]
+              [single ::id]
+              (comp/get-ident Project props)))}
+  (let [[name] (comp/get-ident this)
+        route (case name
+                ::Home ui-home
+                ::Projects ui-projects
+                ::project/id ui-project
+                ui-not-found)]
+    (route props)))
+
+(def ui-router (comp/factory Router))
 
 (defsc GithubUser [_ _]
   {:query [::gu/id ::gu/url]
@@ -53,9 +89,8 @@
 
 (def ui-discord-heading (comp/factory DiscordHeading))
 
-(defsc Heading [_ {::media/keys [email]
-                   :keys [discord github]}]
-  {:query [[::media/email '_]
+(defsc Heading [_ {:keys [discord email github]}]
+  {:query [[:email '_]
            {[:discord '_] (comp/get-query DiscordUser)}
            {[:github '_] (comp/get-query GithubUser)}]
    :initial-state {}} 
@@ -84,24 +119,17 @@
 
 (def ui-heading (comp/factory Heading))
 
-(defsc Router [_ {::route/keys [name]}]
-  ;; There's also ::route/path and ::route/query
-  {:query [::route/name]}
-  (case name
-    :home (ui-home {})
-    :projects (ui-projects {})
-    "?"))
-
-(def ui-router (comp/factory Router))
-
 (defsc App [_ {::keys [heading]
                :keys [route]}]
-  {:query [[:route '_]
+  ;; I'd like :route to be global, but [:route '_], for some reason, doesn't work.
+  {:query [{:route (comp/get-query Router)}
            {::heading (comp/get-query Heading)}]
    :initial-state (fn [_] {::heading (comp/get-initial-state Heading)})}
   (dom/div
     (ui-heading heading)
-    (ui-router route)))
+    (if route
+      (ui-router route)
+      "?")))
 
 (def ui-app (comp/factory App))
 
@@ -119,8 +147,7 @@
       (dom/meta {:name "viewport"
                  :content "width=device-width, initial-scale=1"})
       (dom/title "Kyle Erhabor")
-      (dom/script {:dangerouslySetInnerHTML {:__html (str "window.INITIAL_APP_STATE=\"" (-> this
-                                                                                          app/current-state
+      (dom/script {:dangerouslySetInnerHTML {:__html (str "window.INITIAL_APP_STATE=\"" (-> (app/current-state this)
                                                                                           transit-clj->str
                                                                                           base64-encode) "\"")}})
       ;; It's kind of annoying that Fulcro prepends a space when using :classes even when :className and .class aren't used.
