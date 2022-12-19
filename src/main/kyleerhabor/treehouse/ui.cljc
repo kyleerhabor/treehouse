@@ -25,12 +25,26 @@
 
 (def ui-home (comp/factory Home))
 
-(defsc Projects [_ _]
-  {:query [::id]
+(defsc ProjectsItem [_ {::project/keys [id name]}]
+  {:query [::project/id ::project/name]
+   :ident ::project/id}
+  (dom/a {:href (href+ :project {:id id})}
+    name))
+
+(def ui-projects-item (comp/factory ProjectsItem))
+
+(defsc Projects [_ {projs :projects}]
+  {:query [::id
+           {[:projects '_] (comp/get-query ProjectsItem)}]
    :ident (fn [] (singleton ::Projects))
    :initial-state {}}
   (dom/div
-    (dom/h1 "Projects")))
+    (dom/h1 "Projects")
+    (dom/ul
+      (for [{::project/keys [id]
+             :as proj} projs]
+        (dom/li {:key id}
+          (ui-projects-item proj))))))
 
 (def ui-projects (comp/factory Projects))
 

@@ -12,7 +12,11 @@
 (defn project [match]
   (load! app (comp/get-ident ui/Project (route+/props match)) ui/Project))
 
-(def routes {:project project})
+(defn projects [_]
+  (load! app :projects ui/ProjectsItem))
+
+(def routes {:project project
+             :projects projects})
 
 (def router (rf/router (r/routes route+/router)
               (merge (r/options route+/router)
