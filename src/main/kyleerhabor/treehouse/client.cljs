@@ -3,7 +3,7 @@
    [kyleerhabor.treehouse.client.app :refer [app mount]]
    [kyleerhabor.treehouse.client.route :refer [router]]
    [kyleerhabor.treehouse.mutation :as mut]
-   [kyleerhabor.treehouse.route :as route]
+   [kyleerhabor.treehouse.route.ui :as route+]
    [kyleerhabor.treehouse.ui :as ui]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
    [com.fulcrologic.fulcro.application :as app]
@@ -17,7 +17,7 @@
   (rfe/start! router (fn [match _]
                        (if-let [handler (:handler (:data match))]
                          (handler match))
-                       (comp/transact! app [(mut/route (some-> match route/props))])) {:use-fragment false})
+                       (comp/transact! app [(mut/route (some-> match route+/props))])) {:use-fragment false})
   (load! app :discord ui/DiscordUser)
   (load! app :github ui/GithubUser)
   (mount {:hydrate? true

@@ -1,31 +1,17 @@
-;; NOTE: This namespace will likely be moved under the ui one.
 (ns kyleerhabor.treehouse.route
   (:require
    [kyleerhabor.treehouse.schema :as s]
-   [kyleerhabor.treehouse.model.project :as-alias project]
-   [kyleerhabor.treehouse.ui :as-alias ui]
    [reitit.core :as r]
    [reitit.coercion :as rc]
    [reitit.coercion.malli :refer [coercion]]))
 
-;; It is likely that this namespace will run into circular dependency issues in the future due to the UI's need of the
-;; router to create hrefs.
-
-(defn props [{{{:keys [props]} :ui} :data
-              :as match}]
-  (props match))
-
-(def routes [["/" {:name :home
-                   :ui {:props (constantly {::ui/id ::ui/Home})}}]
+(def routes [["/" :home]
              ["/api" :api]
-             ["/projects" {:name :projects
-                           :ui {:props (constantly {::ui/id ::ui/Projects})}}]
+             ["/projects" :projects]
              ["/projects/:id" {:name :project
                                :coercion coercion
                                :parameters {:path [:map
-                                                   [:id s/ID]]}
-                               :ui {:props (fn [{{{:keys [id]} :path} :parameters}]
-                                             {::project/id id})}}]])
+                                                   [:id s/ID]]}}]])
 
 (defn merge-expand [registry]
   (fn [data opts]

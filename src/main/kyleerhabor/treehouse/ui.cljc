@@ -53,7 +53,7 @@
                   ::project/id (comp/get-query Project)})
    :ident (fn []
             (if-let [single (::id props)]
-              [single ::id]
+              [single ::id] ; Flip.
               (comp/get-ident Project props)))}
   (let [[name] (comp/get-ident this)
         route (case name

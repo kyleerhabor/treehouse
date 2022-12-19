@@ -4,6 +4,7 @@
    [kyleerhabor.treehouse.model.media :as-alias media]
    [kyleerhabor.treehouse.mutation :as mut]
    [kyleerhabor.treehouse.route :as route]
+   [kyleerhabor.treehouse.route.ui :as route+]
    [kyleerhabor.treehouse.server.config :refer [config]]
    [kyleerhabor.treehouse.server.query :as eql]
    [kyleerhabor.treehouse.server.response :refer [doctype]]
@@ -14,6 +15,7 @@
    [com.fulcrologic.fulcro.components :as comp]
    [com.fulcrologic.fulcro.dom-server :as dom]
    [com.fulcrologic.fulcro.server.api-middleware :as s :refer [wrap-transit-params wrap-transit-response]]
+   [reitit.core :as r]
    [reitit.middleware :as-alias rmw]
    [reitit.ring :as rr]
    [reitit.ring.coercion :as rrc]
@@ -39,7 +41,7 @@
 ;; This could potentially be simpler, since config and match don't *really* need to be *in* there.
 (defn current-db [db match]
   (cond-> (assoc db :email (::media/email config))
-    match (mut/route* (route/props match))))
+    match (mut/route* (route+/props match))))
 
 (defn page-handler [request]
   (let [db (current-db root-initial-db (rr/get-match request))
@@ -63,8 +65,8 @@
 
 (def exception-middleware (rrex/create-exception-middleware {::rrex/default #(page-handler %2)}))
 
-(def router (rr/router route/routes
-              (merge (dissoc route/options :compile)
+(def router (rr/router (r/routes route+/router)
+              (merge (dissoc (r/options route+/router) :compile)
                 {:data {:middleware [rrc/coerce-request-middleware
                                      exception-middleware]}
                  :expand (route/merge-expand routes)
