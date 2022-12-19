@@ -33,16 +33,16 @@
 
 (def ui-projects-item (comp/factory ProjectsItem))
 
-(defsc Projects [_ {projs :projects}]
+(defsc Projects [_ {:keys [projects]}]
   {:query [::id
            {[:projects '_] (comp/get-query ProjectsItem)}]
    :ident (fn [] (singleton ::Projects))
    :initial-state {}}
-  (dom/div
+  (dom/main
     (dom/h1 "Projects")
     (dom/ul
       (for [{::project/keys [id]
-             :as proj} projs]
+             :as proj} projects]
         (dom/li {:key id}
           (ui-projects-item proj))))))
 

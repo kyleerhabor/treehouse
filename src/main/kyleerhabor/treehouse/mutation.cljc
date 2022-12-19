@@ -2,7 +2,7 @@
 (ns kyleerhabor.treehouse.mutation
   (:require
    [kyleerhabor.treehouse.route.ui :as route+]
-   [kyleerhabor.treehouse.ui :as ui]
+   [kyleerhabor.treehouse.ui :as-alias ui]
    [com.fulcrologic.fulcro.algorithms.data-targeting :as target]
    [com.fulcrologic.fulcro.mutations :refer [defmutation]]))
 
