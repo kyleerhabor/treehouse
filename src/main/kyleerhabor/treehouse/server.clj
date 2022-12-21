@@ -20,6 +20,7 @@
                  ;;
                  ;; Another solution may be to purge the cljs-runtime folder when compiling under release mode, though
                  ;; this would be slightly more complicated and annoying when switching back to development mode.
+                 (rr/redirect-trailing-slash-handler)
                  (rr/create-resource-handler {:path "/"})
                  (rr/create-default-handler {:not-found r/page-handler
                                              :method-not-allowed (comp method-not-allowed r/allowed)
