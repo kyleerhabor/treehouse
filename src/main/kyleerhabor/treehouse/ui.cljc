@@ -21,7 +21,8 @@
   {:query [::id]
    :ident (fn [] (singleton ::Home))
    :initial-state {}}
-  (dom/div
+  (dom/main
+    ;; Maybe convert this to content?
     (dom/h1 "Hello!")
     (dom/p "I'm Kyle Erhabor, a software developer known under the pseudonym Klay.")))
 
@@ -174,6 +175,7 @@
    :initial-state (fn [_] {::heading (comp/get-initial-state Heading)})}
   (dom/div
     (ui-heading heading)
+    (dom/hr)
     (if route
       (ui-router route)
       (ui-not-found {}))))
