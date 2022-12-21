@@ -12,6 +12,12 @@
 (defn home [_]
   (load! app :home ui/Content))
 
+(defn article [match]
+  (load! app (comp/get-ident ui/Article (route+/props match)) ui/Article))
+
+(defn articles [_]
+  (load! app :articles ui/ArticlesItem))
+
 (defn project [match]
   (load! app (comp/get-ident ui/Project (route+/props match)) ui/Project))
 
@@ -19,6 +25,8 @@
   (load! app :projects ui/ProjectsItem))
 
 (def routes {:home home
+             :article article
+             :articles articles
              :project project
              :projects projects})
 

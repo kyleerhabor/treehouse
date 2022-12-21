@@ -6,6 +6,11 @@
 
 (def routes [["/" :home]
              ["/api" :api]
+             ["/articles" :articles]
+             ["/articles/:id" {:name :article
+                               :coercion coercion
+                               :parameters {:path [:map
+                                                   [:id :keyword]]}}]
              ["/projects" :projects]
              ["/projects/:id" {:name :project
                                :coercion coercion

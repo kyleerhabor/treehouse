@@ -2,6 +2,7 @@
   (:require
    [kyleerhabor.treehouse.model.project :as-alias project]
    [kyleerhabor.treehouse.route :as route]
+   [kyleerhabor.treehouse.schema.article :as-alias article]
    [kyleerhabor.treehouse.ui :as ui]
    [com.fulcrologic.fulcro.components :as comp]
    [reitit.core :as r]))
@@ -14,6 +15,9 @@
   (props match))
 
 (def routes {:home {:ui {:props (constantly {::ui/id ::ui/Home})}}
+             :articles {:ui {:props (constantly {::ui/id ::ui/Articles})}}
+             :article {:ui {:props (fn [{{{:keys [id]} :path} :parameters}]
+                                     {::article/id id})}}
              :projects {:ui {:props (constantly {::ui/id ::ui/Projects})}}
              :project {:ui {:props (fn [{{{:keys [id]} :path} :parameters}]
                                      {::project/id id})}}})

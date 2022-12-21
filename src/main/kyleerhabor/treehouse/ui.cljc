@@ -4,6 +4,7 @@
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
    [kyleerhabor.treehouse.route :refer [href+]]
+   [kyleerhabor.treehouse.schema.article :as-alias article]
    [kyleerhabor.treehouse.schema.github.repository :as-alias gr]
    [com.fulcrologic.fulcro.application :as app]
    [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
@@ -41,6 +42,57 @@
 
 (def ui-home (comp/factory Home))
 
+(defsc Article [_ {::article/keys [title content]}]
+  {:query [::article/id ::article/title
+           {::article/content (comp/get-query Content)}]
+   :ident ::article/id}
+  (dom/main
+    (dom/h1 title)
+    (ui-content content)))
+
+(def ui-article (comp/factory Article))
+
+(defsc ArticlesItem [_ {::article/keys [id title]}]
+  {:query [::article/id ::article/title]
+   :ident ::article/id}
+  (dom/a {:href (href+ :article {:id id})}
+    title))
+
+(def ui-articles-item (comp/factory ArticlesItem))
+
+(defsc Articles [_ {:keys [articles]}]
+  {:query [::id
+           {[:articles '_] (comp/get-query ArticlesItem)}]
+   :ident (fn [] (singleton ::Articles))
+   :initial-state {}}
+  (dom/main
+    (dom/h1 "Articles")
+    (dom/ul
+      (for [{::article/keys [id]
+             :as article} articles]
+        (dom/li {:key id}
+          (ui-articles-item article))))))
+
+(def ui-articles (comp/factory Articles))
+
+(defsc Project [_ {::project/keys [name content github]}]
+  {:query [::project/id ::project/name ::project/github
+           {::project/content (comp/get-query Content)}]
+   :ident ::project/id
+   :css [[:.heading {:display "flex"
+                     :justify-content "space-between"
+                     :align-items "center"}]]}
+  (let [{:keys [heading]} (css/get-classnames Project)]
+    (dom/main
+      (dom/div {:classes [heading]}
+        (dom/h1 name)
+        (when-let [{::gr/keys [url]} github]
+          (dom/a {:href url}
+            "GitHub")))
+      (ui-content content))))
+
+(def ui-project (comp/factory Project))
+
 (defsc ProjectsItem [_ {::project/keys [id name]}]
   {:query [::project/id ::project/name]
    :ident ::project/id}
@@ -64,24 +116,6 @@
 
 (def ui-projects (comp/factory Projects))
 
-(defsc Project [_ {::project/keys [name content github]}]
-  {:query [::project/id ::project/name ::project/github
-           {::project/content (comp/get-query Content)}]
-   :ident ::project/id
-   :css [[:.heading {:display "flex"
-                     :justify-content "space-between"
-                     :align-items "center"}]]}
-  (let [{:keys [heading]} (css/get-classnames Project)]
-    (dom/main
-      (dom/div {:classes [heading]}
-        (dom/h1 name)
-        (when-let [{::gr/keys [url]} github]
-          (dom/a {:href url}
-            "GitHub")))
-      (ui-content content))))
-
-(def ui-project (comp/factory Project))
-
 (defsc NotFound [_ _]
   (dom/p "?"))
 
@@ -89,16 +123,23 @@
 
 (defsc Router [this props]
   {:query (fn [] {::Home (comp/get-query Home)
+                  ::Articles (comp/get-query Articles)
                   ::Projects (comp/get-query Projects)
+                  ::article/id (comp/get-query Article)
                   ::project/id (comp/get-query Project)})
    :ident (fn []
             (if-let [single (::id props)]
               [single ::id] ; Flip.
-              (comp/get-ident Project props)))}
+              (let [c (cond
+                        (contains? props ::article/id) Article
+                        :else Project)]
+                (comp/get-ident c props))))}
   (let [[name] (comp/get-ident this)
         route (case name
                 ::Home ui-home
+                ::Articles ui-articles
                 ::Projects ui-projects
+                ::article/id ui-article
                 ::project/id ui-project
                 ui-not-found)]
     (route props)))
@@ -148,6 +189,9 @@
           (dom/li
             (dom/a {:href (href+ :home)}
               "Home"))
+          (dom/li
+            (dom/a {:href (href+ :articles)}
+              "Articles"))
           (dom/li
             (dom/a {:href (href+ :projects)}
               "Projects"))))
