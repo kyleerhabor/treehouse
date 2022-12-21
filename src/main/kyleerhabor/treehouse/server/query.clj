@@ -13,6 +13,8 @@
    [com.wsscode.pathom.core :as p]
    [com.wsscode.pathom.connect :as pc :refer [defresolver]]))
 
+(def home-content (s/parse-element (load-edn (io/resource "content/home.edn"))))
+
 (def projs (update (load-edn (io/resource "content/projects.edn")) :projects
              (fn [projs]
                (map
@@ -52,7 +54,9 @@
   (if-let [repo (:github (:props (:content (get (:projects projs-map) id))))]
     {::project/github (rename-keys (c/project-github-repo repo) {:url ::gr/url})}))
 
-(def registry [discord github projects project-name project-content project-github])
+(def home (pc/constantly-resolver :home home-content))
+
+(def registry [discord github projects project-name project-content project-github home])
 
 (def parser (p/parser {::p/env {::p/reader [p/map-reader pc/reader2 pc/ident-reader pc/index-reader]
                                 ::pc/mutation-join-globals [:tempids]}

@@ -31,14 +31,12 @@
 
 (def ui-content (comp/factory Content))
 
-(defsc Home [_ _]
-  {:query [::id]
+(defsc Home [_ {:keys [home]}]
+  {:query [::id {[:home '_] (comp/get-query Content)}]
    :ident (fn [] (singleton ::Home))
    :initial-state {}}
   (dom/main
-    ;; Maybe convert this to content?
-    (dom/h1 "Hello!")
-    (dom/p "I'm Kyle Erhabor, a software developer known under the pseudonym Klay.")))
+    (ui-content home)))
 
 (def ui-home (comp/factory Home))
 

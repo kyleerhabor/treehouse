@@ -9,13 +9,17 @@
    [reitit.core :as r]
    [reitit.frontend :as rf]))
 
+(defn home [_]
+  (load! app :home ui/Content))
+
 (defn project [match]
   (load! app (comp/get-ident ui/Project (route+/props match)) ui/Project))
 
 (defn projects [_]
   (load! app :projects ui/ProjectsItem))
 
-(def routes {:project project
+(def routes {:home home
+             :project project
              :projects projects})
 
 (def router (rf/router (r/routes route+/router)
