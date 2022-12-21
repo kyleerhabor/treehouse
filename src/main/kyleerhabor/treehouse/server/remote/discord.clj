@@ -41,6 +41,10 @@
                       :secret (::client-secret config)
                       :redirect "http://localhost:3000/"})
 
+(defn access-token [code]
+  (:body (exchange (merge exchange-params {:type "authorization_code"
+                                           :code code}))))
+
 (defn refresh-token [token]
   (:body (exchange (merge exchange-params {:type "refresh_token"
                                            :refresh_token token}))))
@@ -68,11 +72,6 @@
                                             (save-access res)
                                             (:access_token res)))))
 
-(comment
-  ;; TODO: Allow this function to be called in some "install" process (e.g. a deps alias)
-  (defn access-token [code]
-    (exchange (merge exchange-params {:type "authorization_code"
-                                      :code code})))
-  
-  (defn refresh-stored-token []
-    (save-access (refresh-token (current-refresh-token)))))
+;; Used by the :discord deps alias.
+(defn code [{:keys [code]}]
+  (save-access (access-token code)))
