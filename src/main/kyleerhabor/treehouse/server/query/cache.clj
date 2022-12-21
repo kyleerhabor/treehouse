@@ -8,7 +8,7 @@
 ;; This model of wrapping requests for caches is unsustainable. A generic remote communications model is likely the best
 ;; solution, but I don't know how I'd develop such a thing (or if one already exists).
 
-(def media (cache/ttl-cache-factory {:discord (discord/get-current-user (discord/current-access-token))
+(def media (cache/ttl-cache-factory {:discord (discord/use-token discord/get-current-user)
                                      :github (github/viewer)}
              :ttl (tick/millis (tick/new-duration 1 :days))))
 
