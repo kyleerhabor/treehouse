@@ -65,14 +65,17 @@
 
 (defresolver projects []
   {::pc/output [{:projects [::project/id]}]}
-  {:projects (for [{:keys [id]} (:projects projs)]
-               {::project/id id})})
+  {:projects (map #(rename-keys (select-keys % [:id]) {:id ::article/id}) (:projects projs))})
 
 (defresolver project-name [{::project/keys [id]}]
-  {::project/name (:name (:props (:content (get (:projects projs-map) id))))})
+  {::pc/output [::project/name]}
+  (if-let [project (get (:projects projs-map) id)]
+    {::project/name (:name (:props (:content project)))}))
 
 (defresolver project-content [{::project/keys [id]}]
-  {::project/content (:content (get (:projects projs-map) id))})
+  {::pc/output [::project/content]}
+  (if-let [project (get (:projects projs-map) id)]
+    {::project/content (:content project)}))
 
 (defresolver project-github [{::project/keys [id]}]
   {::pc/output [{::project/github [::gr/url]}]}
