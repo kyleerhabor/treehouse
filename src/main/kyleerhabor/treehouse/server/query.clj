@@ -1,51 +1,58 @@
 (ns kyleerhabor.treehouse.server.query
   (:require
-   [clojure.core.cache.wrapped :as cache]
+   [clojure.java.io :as io]
    [clojure.set :refer [rename-keys]]
    [kyleerhabor.treehouse.model.project :as-alias project]
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
+   [kyleerhabor.treehouse.schema :as s]
+   [kyleerhabor.treehouse.schema.github.repository :as-alias gr]
    [kyleerhabor.treehouse.server.database :as db]
-   [kyleerhabor.treehouse.server.remote.discord :as discord]
-   [kyleerhabor.treehouse.server.remote.github :as github]
+   [kyleerhabor.treehouse.server.query.cache :as c]
+   [kyleerhabor.treehouse.util :refer [load-edn]]
    [com.wsscode.pathom.core :as p]
-   [com.wsscode.pathom.connect :as pc :refer [defresolver]]
-   [datalevin.core :as d]
-   [tick.core :as tick]))
+   [com.wsscode.pathom.connect :as pc :refer [defresolver]]))
 
-;; Would like to improve this in the future.
-(def media (cache/ttl-cache-factory {:discord (discord/get-current-user (discord/current-access-token))
-                                     :github (github/viewer)}
-             :ttl (tick/millis (tick/new-duration 1 :days))))
+(def projs (update (load-edn (io/resource "content/projects.edn")) :projects
+             (fn [projs]
+               (map
+                 (fn [proj]
+                   (-> proj
+                     (update :path #(s/parse-element (load-edn (io/resource %))))
+                     (rename-keys {:path :content}))) projs))))
 
-(defn current-discord-user []
-  (cache/lookup-or-miss media :discord (fn [_] (discord/get-current-user (discord/current-access-token)))))
-
-(defn current-github-user []
-  (cache/lookup-or-miss media :github (fn [_] (github/viewer))))
+(def projs-map (update projs :projects #(zipmap (map :id %) %)))
 
 (defresolver discord []
   {::pc/output [{:discord [::du/id ::du/username ::du/discriminator]}]}
-  {:discord (-> (current-discord-user)
-               (select-keys [:id :username :discriminator])
-               (rename-keys {:id ::du/id
-                             :username ::du/username
-                             :discriminator ::du/discriminator}))})
+  {:discord (-> (c/current-discord-user)
+              (select-keys [:id :username :discriminator])
+              (rename-keys {:id ::du/id
+                            :username ::du/username
+                            :discriminator ::du/discriminator}))})
 
 (defresolver github []
   {::pc/output [{:github [::gu/id ::gu/url]}]}
-  {:github (rename-keys (current-github-user) {:id ::gu/id
+  {:github (rename-keys (c/current-github-user) {:id ::gu/id
                                                :url ::gu/url})})
 
-(defresolver projects [{::keys [db]} _]
+(defresolver projects []
   {::pc/output [{:projects [::project/id]}]}
-  {:projects (map (fn [datom] {::project/id (d/datom-v datom)}) (d/datoms db :ave ::project/id))})
+  {:projects (for [{:keys [id]} (:projects projs)]
+               {::project/id id})})
 
-(defresolver project-name [{::keys [db]} {::project/keys [id]}]
-  {::pc/output [::project/name]}
-  (select-keys (d/entity db [::project/id id]) [::project/name]))
+(defresolver project-name [{::project/keys [id]}]
+  {::project/name (:name (:props (:content (get (:projects projs-map) id))))})
 
-(def registry [discord github projects project-name])
+(defresolver project-content [{::project/keys [id]}]
+  {::project/content (:content (get (:projects projs-map) id))})
+
+(defresolver project-github [{::project/keys [id]}]
+  {::pc/output [{::project/github [::gr/url]}]}
+  (if-let [repo (:github (:props (:content (get (:projects projs-map) id))))]
+    {::project/github {::gr/url (:url (c/project-github-repo repo))}}))
+
+(def registry [discord github projects project-name project-content project-github])
 
 (def parser (p/parser {::p/env {::p/reader [p/map-reader pc/reader2 pc/ident-reader pc/index-reader]
                                 ::pc/mutation-join-globals [:tempids]}

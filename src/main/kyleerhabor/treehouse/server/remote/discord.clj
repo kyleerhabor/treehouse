@@ -55,4 +55,4 @@
                                       :refresh_token refresh-token})))
   
   (defn refresh-stored-token []
-    (refresh-token (d/datom-v (db/latest-datom (d/datoms @db/conn :ave ::refresh-token))))))
+    (save-access (refresh-token (d/datom-v (db/latest-datom (d/datoms @db/conn :ave ::refresh-token)))))))

@@ -1,12 +1,11 @@
 (ns kyleerhabor.treehouse.server.database
   (:require
-    [kyleerhabor.treehouse.model.project :as-alias project]
     [kyleerhabor.treehouse.server.config :refer [config]]
     [datalevin.core :as d]))
 
 (def unique {:db/unique :db.unique/identity})
 
-(def schema {::project/id unique})
+(def schema {})
 
 (def conn (d/get-conn (::dir config) schema))
 

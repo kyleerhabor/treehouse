@@ -4,12 +4,14 @@
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
    [kyleerhabor.treehouse.route :refer [href+]]
+   [kyleerhabor.treehouse.schema.github.repository :as-alias gr]
    [com.fulcrologic.fulcro.application :as app]
    [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
    [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]]
    [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
    [#?(:clj com.fulcrologic.fulcro.dom-server
        :cljs com.fulcrologic.fulcro.dom) :as dom]
+   [com.fulcrologic.fulcro-css.css :as css]
    [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]))
 
 (defn singleton [id]
@@ -48,11 +50,34 @@
 
 (def ui-projects (comp/factory Projects))
 
-(defsc Project [_ {::project/keys [name]}]
-  {:query [::project/id ::project/name]
-   :ident ::project/id}
-  (dom/main
-    (dom/h1 name)))
+(declare ui-content)
+
+(defsc Content [_ {:keys [name children]}]
+  {:query [:name :props :children]}
+  (let [children (map #(if (string? %)
+                         %
+                         (ui-content %)) children)]
+    (case (keyword name)
+      :title (apply dom/h1 children)
+      :text (apply dom/p children)
+      (apply dom/div children))))
+
+(def ui-content (comp/factory Content))
+
+(defsc Project [_ {::project/keys [name content github]}]
+  {:query [::project/id ::project/name ::project/content ::project/github]
+   :ident ::project/id
+   :css [[:.heading {:display "flex"
+                     :justify-content "space-between"
+                     :align-items "center"}]]}
+  (let [{:keys [heading]} (css/get-classnames Project)]
+    (dom/main
+      (dom/div {:classes [heading]}
+        (dom/h1 name)
+        (if-let [{::gr/keys [url]} github]
+          (dom/a {:href url}
+            "GitHub")))
+      (ui-content content))))
 
 (def ui-project (comp/factory Project))
 
@@ -98,6 +123,7 @@
 (defsc DiscordHeading [_ {::du/keys [username discriminator]}]
   {:query [::du/username ::du/discriminator]}
   (dom/div
+    ;; Use the Discord logo instead? But then it'd also make sense to modify the email and github.
     "Discord: "
     (str username \# discriminator)))
 
@@ -107,29 +133,36 @@
   {:query [[:email '_]
            {[:discord '_] (comp/get-query DiscordUser)}
            {[:github '_] (comp/get-query GithubUser)}]
-   :initial-state {}} 
-  (dom/header
-    (dom/nav
-      (dom/ul
-        (dom/li
-          (dom/a {:href (href+ :home)}
-            "Home"))
-        (dom/li
-          (dom/a {:href (href+ :projects)}
-            "Projects")))) 
-    (dom/nav
-      (dom/address
-        (dom/ul
-          (if email
-            (dom/li
-              (dom/a {:href (str "mailto:" email)}
-                "Email")))
-          (if github
-            (dom/li
-              (ui-github-heading github)))
-          (if discord
-            (dom/li
-              (ui-discord-heading discord))))))))
+   :initial-state {}
+   :css [[:.nav {:display "flex"
+                 :justify-content "space-between"}]
+         [:.navlist {:display "flex"
+                     :gap "0.4em"
+                     :list-style "none"
+                     :padding 0}]]}
+  (let [{:keys [nav navlist]} (css/get-classnames Heading)]
+    (dom/header {:classes [nav]}
+      (dom/nav
+        (dom/ul {:classes [navlist]}
+          (dom/li
+            (dom/a {:href (href+ :home)}
+              "Home"))
+          (dom/li
+            (dom/a {:href (href+ :projects)}
+              "Projects"))))
+      (dom/nav
+        (dom/address
+          (dom/ul {:classes [navlist]}
+            (if email
+              (dom/li
+                (dom/a {:href (str "mailto:" email)}
+                  "Email")))
+            (if github
+              (dom/li
+                (ui-github-heading github)))
+            (if discord
+              (dom/li
+                (ui-discord-heading discord)))))))))
 
 (def ui-heading (comp/factory Heading))
 
@@ -143,7 +176,7 @@
     (ui-heading heading)
     (if route
       (ui-router route)
-      "?")))
+      (ui-not-found {}))))
 
 (def ui-app (comp/factory App))
 

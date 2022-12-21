@@ -16,3 +16,7 @@
 (defn viewer []
   (:viewer (:data (query {:queries [[:viewer
                                      [:id :url]]]}))))
+
+(defn project-repo [repo]
+  (:repository (:data (query {:queries [[:repository repo
+                                         [:url]]]}))))

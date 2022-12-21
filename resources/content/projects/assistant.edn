@@ -1,0 +1,4 @@
+(doc {:name "Assistant"
+      :github {:owner "KyleErhabor"
+               :name "assistant"}}
+  (text "A Discord bot to assist my everyday needs."))

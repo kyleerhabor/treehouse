@@ -1,6 +1,5 @@
 (ns kyleerhabor.treehouse.route
   (:require
-   [kyleerhabor.treehouse.schema :as s]
    [reitit.core :as r]
    [reitit.coercion :as rc]
    [reitit.coercion.malli :refer [coercion]]))
@@ -11,7 +10,7 @@
              ["/projects/:id" {:name :project
                                :coercion coercion
                                :parameters {:path [:map
-                                                   [:id s/ID]]}}]])
+                                                   [:id :keyword]]}}]])
 
 (defn merge-expand [registry]
   (fn [data opts]

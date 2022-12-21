@@ -1,0 +1,4 @@
+{:projects [{:id :treehouse
+             :path "content/projects/treehouse.edn"}
+            {:id :assistant
+             :path "content/projects/assistant.edn"}]}
