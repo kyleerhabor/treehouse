@@ -32,7 +32,8 @@
 (def ui-content (comp/factory Content))
 
 (defsc Home [_ {:keys [home]}]
-  {:query [::id {[:home '_] (comp/get-query Content)}]
+  {:query [::id
+           {[:home '_] (comp/get-query Content)}]
    :ident (fn [] (singleton ::Home))
    :initial-state {}}
   (dom/main
@@ -64,7 +65,8 @@
 (def ui-projects (comp/factory Projects))
 
 (defsc Project [_ {::project/keys [name content github]}]
-  {:query [::project/id ::project/name ::project/content ::project/github]
+  {:query [::project/id ::project/name ::project/github
+           {::project/content (comp/get-query Content)}]
    :ident ::project/id
    :css [[:.heading {:display "flex"
                      :justify-content "space-between"
