@@ -15,9 +15,9 @@
 (def project-github (cache/ttl-cache-factory {} :ttl (tick/millis (tick/new-duration 1 :days))))
 
 (defn current-discord-user []
-  (cache/lookup-or-miss media :discord (fn [_] (discord/get-current-user (discord/current-access-token)))))
+  (cache/lookup-or-miss media :discord (fn [_] (discord/use-token discord/get-current-user))))
 
-(defn current-github-user []
+(defn current-github-viewer []
   (cache/lookup-or-miss media :github (fn [_] (github/viewer))))
 
 (defn project-github-repo [repo]

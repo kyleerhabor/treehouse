@@ -33,7 +33,7 @@
 
 (defresolver github []
   {::pc/output [{:github [::gu/id ::gu/url]}]}
-  {:github (rename-keys (c/current-github-user) {:id ::gu/id
+  {:github (rename-keys (c/current-github-viewer) {:id ::gu/id
                                                :url ::gu/url})})
 
 (defresolver projects []
