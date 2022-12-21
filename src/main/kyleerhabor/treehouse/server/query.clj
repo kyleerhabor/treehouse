@@ -50,7 +50,7 @@
 (defresolver project-github [{::project/keys [id]}]
   {::pc/output [{::project/github [::gr/url]}]}
   (if-let [repo (:github (:props (:content (get (:projects projs-map) id))))]
-    {::project/github {::gr/url (:url (c/project-github-repo repo))}}))
+    {::project/github (rename-keys (c/project-github-repo repo) {:url ::gr/url})}))
 
 (def registry [discord github projects project-name project-content project-github])
 

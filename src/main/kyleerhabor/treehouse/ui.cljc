@@ -17,6 +17,20 @@
 (defn singleton [id]
   [::id id])
 
+(declare ui-content)
+
+(defsc Content [_ {:keys [name children]}]
+  {:query [:name :props :children]}
+  (let [children (map #(if (string? %)
+                         %
+                         (ui-content %)) children)]
+    (case (keyword name)
+      :title (apply dom/h1 children)
+      :text (apply dom/p children)
+      (apply dom/div children))))
+
+(def ui-content (comp/factory Content))
+
 (defsc Home [_ _]
   {:query [::id]
    :ident (fn [] (singleton ::Home))
@@ -51,20 +65,6 @@
 
 (def ui-projects (comp/factory Projects))
 
-(declare ui-content)
-
-(defsc Content [_ {:keys [name children]}]
-  {:query [:name :props :children]}
-  (let [children (map #(if (string? %)
-                         %
-                         (ui-content %)) children)]
-    (case (keyword name)
-      :title (apply dom/h1 children)
-      :text (apply dom/p children)
-      (apply dom/div children))))
-
-(def ui-content (comp/factory Content))
-
 (defsc Project [_ {::project/keys [name content github]}]
   {:query [::project/id ::project/name ::project/content ::project/github]
    :ident ::project/id
@@ -75,7 +75,7 @@
     (dom/main
       (dom/div {:classes [heading]}
         (dom/h1 name)
-        (if-let [{::gr/keys [url]} github]
+        (when-let [{::gr/keys [url]} github]
           (dom/a {:href url}
             "GitHub")))
       (ui-content content))))

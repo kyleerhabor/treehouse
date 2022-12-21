@@ -12,7 +12,7 @@
                                      :github (github/viewer)}
              :ttl (tick/millis (tick/new-duration 1 :days))))
 
-(def project-github (cache/ttl-cache-factory {} :ttl (tick/millis (tick/new-duration 1 :days))))
+(def project-github (cache/ttl-cache-factory {} :ttl (tick/millis (tick/new-duration 1 :hours))))
 
 (defn current-discord-user []
   (cache/lookup-or-miss media :discord (fn [_] (discord/use-token discord/get-current-user))))
