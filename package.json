@@ -2,12 +2,6 @@
   "name": "treehouse",
   "private": true,
   "version": "0.1.0",
-  "description": "My own little website.",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/KyleErhabor/treehouse.git"
-  },
-  "author": "Kyle Erhabor <kyleerhabor@gmail.com>",
   "devDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
