@@ -73,5 +73,9 @@
                                             (:access_token res)))))
 
 ;; Used by the :discord deps alias.
-(defn code [{:keys [code]}]
-  (save-access (access-token code)))
+(defn store [{:keys [code token refresh]}]
+  (cond
+    code (save-access (access-token code))
+    (and token refresh) (save-access {:access_token token
+                                      :refresh_token refresh})
+    :else (println "No input.")))
