@@ -12,5 +12,8 @@ db/
 .shadow-cljs/
 resources/public/assets/*/js/compiled/
 
+# Build
+target/
+
 # Node
 node_modules/

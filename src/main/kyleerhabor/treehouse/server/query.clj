@@ -2,7 +2,7 @@
   (:require
    [clojure.java.io :as io]
    [clojure.set :refer [rename-keys]]
-   [kyleerhabor.treehouse.model.project :as-alias project]
+   [kyleerhabor.treehouse.schema.project :as-alias project]
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
    [kyleerhabor.treehouse.schema :as s]
@@ -17,22 +17,22 @@
 (def home-content (s/parse-element (load-edn (io/resource "content/home.edn"))))
 
 (def arts (update (load-edn (io/resource "content/articles.edn")) :articles
-            (fn [projs]
+            (fn [articles]
               (map
-                (fn [proj]
-                  (-> proj
+                (fn [article]
+                  (-> article
                     (update :path #(s/parse-element (load-edn (io/resource %))))
-                    (rename-keys {:path :content}))) projs))))
+                    (rename-keys {:path :content}))) articles))))
 
 (def arts-map (update arts :articles #(zipmap (map :id %) %)))
 
 (def projs (update (load-edn (io/resource "content/projects.edn")) :projects
-             (fn [projs]
+             (fn [projects]
                (map
-                 (fn [proj]
-                   (-> proj
+                 (fn [project]
+                   (-> project
                      (update :path #(s/parse-element (load-edn (io/resource %))))
-                     (rename-keys {:path :content}))) projs))))
+                     (rename-keys {:path :content}))) projects))))
 
 (def projs-map (update projs :projects #(zipmap (map :id %) %)))
 
@@ -65,7 +65,7 @@
 
 (defresolver projects []
   {::pc/output [{:projects [::project/id]}]}
-  {:projects (map #(rename-keys (select-keys % [:id]) {:id ::article/id}) (:projects projs))})
+  {:projects (map #(rename-keys (select-keys % [:id]) {:id ::project/id}) (:projects projs))})
 
 (defresolver project-name [{::project/keys [id]}]
   {::pc/output [::project/name]}

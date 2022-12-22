@@ -5,7 +5,8 @@
    [kyleerhabor.treehouse.server.route :as r]
    [mount.core :as m :refer [defstate]]
    [reitit.ring :as rr]
-   [ring.adapter.jetty :refer [run-jetty]]))
+   [ring.adapter.jetty :refer [run-jetty]])
+  (:gen-class))
 
 (def handler (rr/ring-handler r/router
                (rr/routes

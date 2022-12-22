@@ -1,6 +1,6 @@
 (ns kyleerhabor.treehouse.route.ui
   (:require
-   [kyleerhabor.treehouse.model.project :as-alias project]
+   [kyleerhabor.treehouse.schema.project :as-alias project]
    [kyleerhabor.treehouse.route :as route]
    [kyleerhabor.treehouse.schema.article :as-alias article]
    [kyleerhabor.treehouse.ui :as ui]
