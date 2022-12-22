@@ -1,12 +1,15 @@
 (ns kyleerhabor.treehouse.server.response)
 
 (def status-codes {:unauthorized 401
+                   :forbidden 403
                    :method-not-allowed 405
                    :not-acceptable 406
                    :internal-server-error 500})
 
 (defn unauthorized? [res]
   (= (:status res) (:unauthorized status-codes)))
+
+(def forbidden {:status (:forbidden status-codes)})
 
 (defn method-not-allowed [methods]
   {:status (:method-not-allowed status-codes)

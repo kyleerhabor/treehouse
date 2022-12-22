@@ -233,16 +233,16 @@
 
 (def ui-root (comp/factory Root))
 
-(defsc Document [this props]
+(defn document [db props {:keys [anti-forgery-token]}]
   (dom/html
     (dom/head
       (dom/meta {:charset "UTF-8"})
       (dom/meta {:name "viewport"
                  :content "width=device-width, initial-scale=1"})
       (dom/title "Kyle Erhabor")
-      (dom/script {:dangerouslySetInnerHTML {:__html (str "window.INITIAL_APP_STATE=\"" (-> (app/current-state this)
-                                                                                          transit-clj->str
-                                                                                          base64-encode) "\"")}})
+      (dom/script {:dangerouslySetInnerHTML {:__html (str
+                                                       "window.INITIAL_APP_STATE=\"" (base64-encode (transit-clj->str db)) "\";"
+                                                       "var fulcro_network_csrf_token=\"" anti-forgery-token "\"")}})
       ;; It's kind of annoying that Fulcro prepends a space when using :classes even when :className and .class aren't used.
       (style-element {:component Root
                       :garden-flags {:pretty-print? false}}))
@@ -250,5 +250,3 @@
       (dom/div :#app
         (ui-root props))
       (dom/script {:src "/assets/main/js/compiled/main.js"}))))
-
-(def ui-document (comp/computed-factory Document))

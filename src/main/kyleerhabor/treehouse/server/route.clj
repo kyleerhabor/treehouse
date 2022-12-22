@@ -7,7 +7,7 @@
    [kyleerhabor.treehouse.route.ui :as route+]
    [kyleerhabor.treehouse.server.config :refer [config]]
    [kyleerhabor.treehouse.server.query :as eql]
-   [kyleerhabor.treehouse.server.response :refer [doctype]]
+   [kyleerhabor.treehouse.server.response :refer [doctype forbidden]]
    [kyleerhabor.treehouse.ui :as ui]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
    [com.fulcrologic.fulcro.algorithms.denormalize :refer [db->tree]]
@@ -20,6 +20,9 @@
    [reitit.ring :as rr]
    [reitit.ring.coercion :as rrc]
    [reitit.ring.middleware.exception :as rrex]
+   [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
+   [ring.middleware.x-headers :refer [wrap-content-type-options wrap-frame-options]]
+   [ring.middleware.session :refer [wrap-session]]
    [ring.util.mime-type :refer [default-mime-types]]
    [ring.util.response :as res]))
 
@@ -48,7 +51,7 @@
         props (db->tree (comp/get-query root db) db db)
         app (app/fulcro-app {:initial-db db})
         html (binding [comp/*app* app]
-               (dom/render-to-str (ui/ui-document props)))]
+               (dom/render-to-str (ui/document db props {:anti-forgery-token (:anti-forgery-token request)})))]
     (-> (res/response (str doctype html))
       (res/content-type (get default-mime-types "html")))))
 
@@ -56,20 +59,28 @@
   (let [r (eql/parse query)]
     (s/generate-response (merge (res/response r) (s/apply-response-augmentations r)))))
 
-(def routes {:home {:get {:handler page-handler}}
+(def routes {:home {:middleware [[:session] [:anti-forgery]]
+                    :get {:handler page-handler}}
+             ;; Should anti-forgery be used here?
              :api {:post {:handler api-handler
                           :middleware [[:transit-params]
                                        [:transit-response]]}}
-             :projects {:get {:handler page-handler}}
-             :project {:get {:handler page-handler}}})
+             :projects {:middleware [[:session] [:anti-forgery]]
+                        :get {:handler page-handler}}
+             :project {:middleware [[:session] [:anti-forgery]]
+                       :get {:handler page-handler}}})
 
 (def exception-middleware (rrex/create-exception-middleware {::rrex/default #(page-handler %2)}))
 
 (def router (rr/router (r/routes route+/router)
               (merge (dissoc (r/options route+/router) :compile)
                 {:data {:middleware [rrc/coerce-request-middleware
+                                     [wrap-content-type-options :nosniff]
+                                     [wrap-frame-options :deny] ; Content-Security-Policy could replace this.
                                      exception-middleware]}
                  :expand (route/merge-expand routes)
-                 ::rmw/registry {:transit-params [wrap-transit-params {:malformed-response (res/bad-request nil)}]
+                 ::rmw/registry {:anti-forgery [wrap-anti-forgery {:error-response forbidden}]
+                                 :session wrap-session
+                                 :transit-params [wrap-transit-params {:malformed-response (res/bad-request nil)}]
                                  :transit-response wrap-transit-response}
                  ::rr/default-options-endpoint {:handler (comp res/response allowed)}})))
