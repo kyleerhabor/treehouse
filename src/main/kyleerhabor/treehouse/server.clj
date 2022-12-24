@@ -10,16 +10,17 @@
 
 (def method-not-allowed (comp res/method-not-allowed r/allowed))
 
+(def default-handler-options {:method-not-allowed method-not-allowed})
+
 (def default-handler (rr/ring-handler r/default-router
-                       (rr/create-default-handler {:method-not-allowed method-not-allowed})))
+                       (rr/create-default-handler default-handler-options)))
 
 (def handler (rr/ring-handler r/router
                (rr/routes
                  (rr/redirect-trailing-slash-handler)
                  (rr/create-resource-handler {:path "/"})
                  ;; TODO: Figure out what to do with :not-acceptable.
-                 (rr/create-default-handler {:not-found default-handler
-                                             :method-not-allowed method-not-allowed}))))
+                 (rr/create-default-handler (assoc default-handler-options :not-found default-handler)))))
 
 (defstate server
   :start (run-jetty handler {:port (::port config)

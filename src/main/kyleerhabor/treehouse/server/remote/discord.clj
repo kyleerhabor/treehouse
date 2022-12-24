@@ -38,19 +38,20 @@
                                                                        :type :grant_type
                                                                        :redirect :redirect_uri})}))
 
-;; It's weird to wrap this.
-(defstate exchange-params
-  :start {:id (::client-id config)
-          :secret (::client-secret config)
-          :redirect (::redirect config)})
+;; Config may not be initialized, so delay execution.
+(def exchange-params* (delay {:id (::client-id config)
+                              :secret (::client-secret config)
+                              :redirect (::redirect config)}))
+
+(def exchange-params (partial deref exchange-params*))
 
 (defn access-token [code]
-  (:body (exchange (merge exchange-params {:type "authorization_code"
-                                           :code code}))))
+  (:body (exchange (merge (exchange-params) {:type "authorization_code"
+                                             :code code}))))
 
 (defn refresh-token [token]
-  (:body (exchange (merge exchange-params {:type "refresh_token"
-                                           :refresh_token token}))))
+  (:body (exchange (merge (exchange-params) {:type "refresh_token"
+                                             :refresh_token token}))))
 
 (defn get-current-user [token]
   (request current-user-url :get {:oauth-token token
