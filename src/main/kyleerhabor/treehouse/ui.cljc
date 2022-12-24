@@ -176,7 +176,8 @@
            {[:github '_] (comp/get-query GithubUser)}]
    :initial-state {}
    :css [[:.nav {:display "flex"
-                 :justify-content "space-between"}]
+                 :justify-content "space-between"
+                 :gap "1em"}]
          [:.navlist {:display "flex"
                      :gap "0.4em"
                      :list-style "none"

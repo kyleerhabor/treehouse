@@ -38,6 +38,7 @@
                                                                        :type :grant_type
                                                                        :redirect :redirect_uri})}))
 
+;; It's weird to wrap this.
 (defstate exchange-params
   :start {:id (::client-id config)
           :secret (::client-secret config)

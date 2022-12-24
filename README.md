@@ -58,14 +58,13 @@ the access token and refresh associates the refresh token.
 
 ### Build
 
-To compile the project, run `clojure -T:build uberjar`. This will compile ClojureScript to `resources/public/assets/main/js/compiled/main.js` and produce an uberjar (a Java jar with dependencies) in `target/treehouse-...-standalone.jar`, where `...` is
-the current version. As the uberjar is just a Java jar, it can be compiled locally and distributed elsewhere (e.g. to a
-host).
+To compile the project, run `clojure -T:build uberjar`. This will compile ClojureScript to `resources/public/assets/main/js/compiled/main.js` and produce an uberjar (a JAR with dependencies) in `target/treehouse-...-standalone.jar`, where `...` is the
+current version. As the uberjar is just a JAR, it can be compiled locally and distributed elsewhere (e.g. to a host).
 
 ## Running
 
-To run the project, run `java -jar target/treehouse-...-standalone.jar`, where `...` is the current version. The homa
-page can then be found at `http://localhost:.../`, where `...` is the port used in the config.s
+To run the project, run `java -jar target/treehouse-...-standalone.jar`, where `...` is the current version. Navigate to
+`http://localhost:.../` to see the home page, with `...` being the port used in the config.
 
 ## License
 
