@@ -1,6 +1,6 @@
 # Config
+resources/config.edn
 resources/config/*
-!resources/config/defaults.edn
 
 # Database
 db/

@@ -1,11 +1,10 @@
 (ns kyleerhabor.treehouse.server.route
   (:require
    [clojure.string :as str]
-   [kyleerhabor.treehouse.model.media :as-alias media]
    [kyleerhabor.treehouse.mutation :as mut]
    [kyleerhabor.treehouse.route :as route]
    [kyleerhabor.treehouse.route.ui :as route+]
-   [kyleerhabor.treehouse.server.config :refer [config]]
+   [kyleerhabor.treehouse.server.config :as-alias config :refer [config]]
    [kyleerhabor.treehouse.server.query :as eql]
    [kyleerhabor.treehouse.server.response :refer [doctype forbidden]]
    [kyleerhabor.treehouse.ui :as ui]
@@ -43,8 +42,9 @@
 
 ;; This could potentially be simpler, since config and match don't *really* need to be *in* there.
 (defn current-db [db match]
-  (cond-> (assoc db :email (::media/email config))
-    match (mut/route* (route+/props match))))
+  (cond-> (assoc db :email (::config/email config))
+    ;; The default route has no UI data.
+    (:ui (:data match)) (mut/route* (route+/props match))))
 
 (defn page-handler [request]
   (let [db (current-db root-initial-db (rr/get-match request))
@@ -84,3 +84,10 @@
                                  :transit-params [wrap-transit-params {:malformed-response (res/bad-request nil)}]
                                  :transit-response wrap-transit-response}
                  ::rr/default-options-endpoint {:handler (comp res/response allowed)}})))
+
+(def default-routes [["*" {:name :any
+                           :middleware [[:session] [:anti-forgery]]
+                           :get {:handler page-handler}}]])
+
+(def default-router (rr/router default-routes
+                      (r/options router)))

@@ -14,7 +14,7 @@
 (defn uberjar [_]
   (clean nil)
   ;; TODO: Figure out how to require shadow without it causing errors (adding it in :deps doesn't work)
-  (b/process {:command-args ["npx" "shadow-cljs" "release" ":main"]})
+  (b/process {:command-args ["npx" "shadow-cljs" "release" "main"]})
   (b/copy-dir {:src-dirs ["src/main" "resources"]
                :target-dir class-dir})
   (b/compile-clj {:basis basis

@@ -8,12 +8,13 @@
         metosin/reitit-malli {:mvn/version "0.5.18"}}
  :aliases {:client {:extra-deps {org.clojure/clojurescript {:mvn/version "1.11.60"}
                                  metosin/reitit-frontend {:mvn/version "0.5.18"}
-                                 thheller/shadow-cljs {:mvn/version "2.20.15"}}}
+                                 thheller/shadow-cljs {:mvn/version "2.20.16"}}}
            :server {:extra-paths ["resources"]
                     :extra-deps {org.clojure/core.cache {:mvn/version "1.0.225"}
                                  org.clojure/data.json {:mvn/version "2.4.0"}
                                  cheshire/cheshire {:mvn/version "5.11.0"} ; For clj-http 
                                  clj-http/clj-http {:mvn/version "3.12.3"} ; Consider replacing for hato.
+                                 cprop/cprop {:mvn/version "0.1.19"}
                                  datalevin/datalevin {:mvn/version "0.7.7"}
                                  district0x/graphql-query {:mvn/version "1.0.6"}
                                  metosin/reitit-ring {:mvn/version "0.5.18"}
@@ -31,4 +32,4 @@
            :discord {:exec-fn kyleerhabor.treehouse.server.remote.discord/store}
            :build {:ns-default kyleerhabor.treehouse.build
                    :paths ["src/build"]
-                   :deps {org.clojure/tools.build {:mvn/version "0.8.4"}}}}}
+                   :deps {org.clojure/tools.build {:mvn/version "0.9.0"}}}}}

@@ -1,20 +1,25 @@
 (ns kyleerhabor.treehouse.server
   (:require
    [kyleerhabor.treehouse.server.config :refer [config]]
-   [kyleerhabor.treehouse.server.response :refer [method-not-allowed]]
+   [kyleerhabor.treehouse.server.response :as res]
    [kyleerhabor.treehouse.server.route :as r]
    [mount.core :as m :refer [defstate]]
    [reitit.ring :as rr]
    [ring.adapter.jetty :refer [run-jetty]])
   (:gen-class))
 
+(def method-not-allowed (comp res/method-not-allowed r/allowed))
+
+(def default-handler (rr/ring-handler r/default-router
+                       (rr/create-default-handler {:method-not-allowed method-not-allowed})))
+
 (def handler (rr/ring-handler r/router
                (rr/routes
                  (rr/redirect-trailing-slash-handler)
                  (rr/create-resource-handler {:path "/"})
-                 (rr/create-default-handler {:not-found r/page-handler
-                                             :method-not-allowed (comp method-not-allowed r/allowed)
-                                             :not-acceptable r/page-handler}))))
+                 ;; TODO: Figure out what to do with :not-acceptable.
+                 (rr/create-default-handler {:not-found default-handler
+                                             :method-not-allowed method-not-allowed}))))
 
 (defstate server
   :start (run-jetty handler {:port (::port config)

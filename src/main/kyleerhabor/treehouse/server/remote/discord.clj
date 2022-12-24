@@ -2,6 +2,7 @@
   (:require
    [clojure.set :refer [rename-keys]]
    [clj-http.client :as http]
+   [mount.core :as m :refer [defstate]]
    [kyleerhabor.treehouse.server.config :refer [config]]
    [kyleerhabor.treehouse.server.database :as db]
    [kyleerhabor.treehouse.server.response :refer [unauthorized?]]
@@ -37,9 +38,10 @@
                                                                        :type :grant_type
                                                                        :redirect :redirect_uri})}))
 
-(def exchange-params {:id (::client-id config)
-                      :secret (::client-secret config)
-                      :redirect "http://localhost:3000/"})
+(defstate exchange-params
+  :start {:id (::client-id config)
+          :secret (::client-secret config)
+          :redirect (::redirect config)})
 
 (defn access-token [code]
   (:body (exchange (merge exchange-params {:type "authorization_code"
@@ -74,6 +76,7 @@
 
 ;; Used by the :discord deps alias.
 (defn store [{:keys [code token refresh]}]
+  (m/start)
   (cond
     code (save-access (access-token code))
     (and token refresh) (save-access {:access_token token

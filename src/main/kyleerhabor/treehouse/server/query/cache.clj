@@ -1,4 +1,4 @@
-(ns kyleerhabor.treehouse.server.query.cache
+(ns kyleerhabor.treehouse.server.query.cache ; Or remote?
   (:require
    [clojure.core.cache.wrapped :as cache]
    [kyleerhabor.treehouse.server.remote.discord :as discord]
@@ -8,11 +8,9 @@
 ;; This model of wrapping requests for caches is unsustainable. A generic remote communications model is likely the best
 ;; solution, but I don't know how I'd develop such a thing (or if one already exists).
 
-(def media (cache/ttl-cache-factory {:discord (discord/use-token discord/get-current-user)
-                                     :github (github/viewer)}
-             :ttl (tick/millis (tick/new-duration 1 :days))))
+(def media (cache/ttl-cache-factory {} :ttl (tick/millis (tick/new-duration 1 :days))))
 
-(def project-github (cache/ttl-cache-factory {} :ttl (tick/millis (tick/new-duration 1 :hours))))
+(def project-github (cache/ttl-cache-factory {} :ttl (tick/millis (tick/new-duration 6 :hours))))
 
 (defn current-discord-user []
   (cache/lookup-or-miss media :discord (fn [_] (discord/use-token discord/get-current-user))))
