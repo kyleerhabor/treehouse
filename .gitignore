@@ -10,7 +10,7 @@ db/
 
 # Shadow
 .shadow-cljs/
-resources/public/assets/*/js/compiled/
+resources/public/assets/**/compiled/
 
 # Build
 target/

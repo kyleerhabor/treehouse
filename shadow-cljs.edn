@@ -3,9 +3,11 @@
                  :output-dir "resources/public/assets/main/js/compiled"
                  :asset-path "/assets/main/js/compiled"
                  :module-hash-names true
-                 :compiler-options {:source-map true}
+                 :build-hooks [(stylo.shadow/reload "resources/public/assets/main/css/compiled/stylo.css")]
                  :modules {:main {:init-fn kyleerhabor.treehouse.client/init
                                   :entries [kyleerhabor.treehouse.client]}}
                  :devtools {:after-load kyleerhabor.treehouse.client/refresh
                             :preloads [com.fulcrologic.fulcro.inspect.preload
-                                       com.fulcrologic.fulcro.inspect.dom-picker-preload]}}}}
+                                       com.fulcrologic.fulcro.inspect.dom-picker-preload]
+                            :watch-dir "public"}
+                 :compiler-options {:source-map true}}}}

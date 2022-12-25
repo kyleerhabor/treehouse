@@ -13,7 +13,8 @@
    [#?(:clj com.fulcrologic.fulcro.dom-server
        :cljs com.fulcrologic.fulcro.dom) :as dom]
    [com.fulcrologic.fulcro-css.css :as css]
-   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]))
+   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]
+   [stylo.core :refer [c]]))
 
 (defn singleton [id]
   [::id id])
@@ -26,8 +27,8 @@
                          %
                          (ui-content %)) children)]
     (case (keyword name)
-      :title (apply dom/h1 children)
-      :text (apply dom/p children)
+      :title (apply dom/h1 {:className (c :font-sans)} children)
+      :text (apply dom/p {:className (c :font-serif)} children)
       (apply dom/div children))))
 
 (def ui-content (comp/factory Content))
@@ -251,7 +252,8 @@
                                                        "var fulcro_network_csrf_token=\"" anti-forgery-token "\"")}})
       ;; It's kind of annoying that Fulcro prepends a space when using :classes even when :className and .class aren't used.
       (style-element {:component Root
-                      :garden-flags {:pretty-print? false}}))
+                      :garden-flags {:pretty-print? false}})
+      (dom/link {:href "/assets/main/css/compiled/stylo.css" :rel "stylesheet"}))
     (dom/body
       (dom/div :#app
         (ui-root props))
