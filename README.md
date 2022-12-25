@@ -56,6 +56,12 @@ The last step will exchange the token for an access and refresh token the projec
 If you already have one, run `clojure -X:server:discord :token '"..."' :refresh '"..."'` instead where token associates
 the access token and refresh associates the refresh token.
 
+### GitHub
+
+GitHub requires a personal access token to communicate with the API. [Create a token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-personal-access-token-classic)
+with the `read:user` scope and save it for configuration. At the time of writing this, fine-grained personal access
+tokens are not supported for the server's operations, so ignore the suggestion to create one.
+
 ### Build
 
 To compile the project, run `clojure -T:build uberjar`. This will compile ClojureScript to `resources/public/assets/main/js/compiled/main.js` and produce an uberjar (a JAR with dependencies) in `target/treehouse-...-standalone.jar`, where `...` is the

@@ -80,6 +80,7 @@
 (def router (rr/router (r/routes route+/router)
               (merge (dissoc (r/options route+/router) :compile)
                 {:data {:middleware [rrc/coerce-request-middleware
+                                     ;; TODO: Move this so API requests aren't included (or just use CSP).
                                      [wrap-content-type-options :nosniff]
                                      ;; Content-Security-Policy could replace this.
                                      [wrap-frame-options :deny]]}
