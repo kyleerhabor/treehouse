@@ -2,7 +2,7 @@
   (:require
    [clojure.set :refer [rename-keys]]
    [clj-http.client :as http]
-   [mount.core :as m :refer [defstate]]
+   [mount.core :as m]
    [kyleerhabor.treehouse.server.config :refer [config]]
    [kyleerhabor.treehouse.server.database :as db]
    [kyleerhabor.treehouse.server.response :refer [unauthorized?]]

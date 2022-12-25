@@ -12,6 +12,7 @@
            :server {:extra-paths ["resources"]
                     :extra-deps {org.clojure/core.cache {:mvn/version "1.0.225"}
                                  org.clojure/data.json {:mvn/version "2.4.0"}
+                                 amalloy/ring-gzip-middleware {:mvn/version "0.1.4"}
                                  cheshire/cheshire {:mvn/version "5.11.0"} ; For clj-http 
                                  clj-http/clj-http {:mvn/version "3.12.3"} ; Consider replacing for hato.
                                  cprop/cprop {:mvn/version "0.1.19"}
@@ -31,5 +32,5 @@
                                "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]}
            :discord {:exec-fn kyleerhabor.treehouse.server.remote.discord/store}
            :build {:ns-default kyleerhabor.treehouse.build
-                   :paths ["src/build"]
+                   :paths ["src/build" "resources"]
                    :deps {org.clojure/tools.build {:mvn/version "0.9.0"}}}}}

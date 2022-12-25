@@ -5,7 +5,8 @@
    [kyleerhabor.treehouse.server.route :as r]
    [mount.core :as m :refer [defstate]]
    [reitit.ring :as rr]
-   [ring.adapter.jetty :refer [run-jetty]])
+   [ring.adapter.jetty :refer [run-jetty]]
+   [ring.middleware.gzip :refer [wrap-gzip]])
   (:gen-class))
 
 (def method-not-allowed (comp res/method-not-allowed r/allowed))
@@ -20,7 +21,9 @@
                  (rr/redirect-trailing-slash-handler)
                  (rr/create-resource-handler {:path "/"})
                  ;; TODO: Figure out what to do with :not-acceptable.
-                 (rr/create-default-handler (assoc default-handler-options :not-found default-handler)))))
+                 (rr/create-default-handler (assoc default-handler-options :not-found default-handler)))
+               {:middleware [wrap-gzip
+                             r/exception-middleware]}))
 
 (defstate server
   :start (run-jetty handler {:port (::port config)

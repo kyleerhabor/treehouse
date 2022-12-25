@@ -6,6 +6,7 @@
    [kyleerhabor.treehouse.route :refer [href+]]
    [kyleerhabor.treehouse.schema.article :as-alias article]
    [kyleerhabor.treehouse.schema.github.repository :as-alias gr]
+   [kyleerhabor.treehouse.ui.icon :as icon]
    [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
    [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]]
    [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
@@ -80,14 +81,17 @@
    :ident ::project/id
    :css [[:.heading {:display "flex"
                      :justify-content "space-between"
-                     :align-items "center"}]]}
-  (let [{:keys [heading]} (css/get-classnames Project)]
+                     :align-items "center"}]
+         ;; I'd like the height to be the same as the title, but don't know how to do that. This works though.
+         [:.icon {:height "2em"}]]}
+  (let [{:keys [heading icon]} (css/get-classnames Project)]
     (dom/main
       (dom/div {:classes [heading]}
         (dom/h1 name)
         (when-let [{::gr/keys [url]} github]
-          (dom/a {:href url}
-            "GitHub")))
+          (dom/a {:classes [icon]
+                  :href url}
+            (icon/ui-github {}))))
       (ui-content content))))
 
 (def ui-project (comp/factory Project))
@@ -164,7 +168,6 @@
 (defsc DiscordHeading [_ {::du/keys [username discriminator]}]
   {:query [::du/username ::du/discriminator]}
   (dom/div
-    ;; Use the Discord logo instead? But then it'd also make sense to modify the email and github.
     "Discord: "
     (str username \# discriminator)))
 
@@ -172,10 +175,11 @@
 
 (defsc Heading [_ {:keys [discord email github]}]
   {:query [[:email '_]
-           {[:discord '_] (comp/get-query DiscordUser)}
-           {[:github '_] (comp/get-query GithubUser)}]
+           {[:discord '_] (comp/get-query DiscordHeading)}
+           {[:github '_] (comp/get-query GithubHeading)}]
    :initial-state {}
    :css [[:.nav {:display "flex"
+                 :border-bottom "black solid"
                  :justify-content "space-between"
                  :gap "1em"}]
          [:.navlist {:display "flex"
@@ -200,8 +204,9 @@
           (dom/ul {:classes [navlist]}
             (if email
               (dom/li
-                (dom/a {:href (str "mailto:" email)}
-                  "Email")))
+                (dom/div
+                  (dom/a {:href (str "mailto:" email)}
+                    "Email"))))
             (if github
               (dom/li
                 (ui-github-heading github)))
@@ -219,7 +224,6 @@
    :initial-state (fn [_] {::heading (comp/get-initial-state Heading)})}
   (dom/div
     (ui-heading heading)
-    (dom/hr) ; This is technically wrong, as hr is for paragraph separation. Replace with CSS.
     (if route
       (ui-router route)
       (ui-not-found {}))))
@@ -233,13 +237,15 @@
 
 (def ui-root (comp/factory Root))
 
-(defn document [db props {:keys [anti-forgery-token]}]
-  (dom/html
+(defn document [db props {:keys [anti-forgery-token source]}]
+  (dom/html {:lang "en-US"}
     (dom/head
       (dom/meta {:charset "UTF-8"})
       (dom/meta {:name "viewport"
                  :content "width=device-width, initial-scale=1"})
       (dom/title "Kyle Erhabor")
+      (dom/meta {:name "description"
+                 :content "Kyle Erhabor is a software developer known under the pseudonym Klay."})
       (dom/script {:dangerouslySetInnerHTML {:__html (str
                                                        "window.INITIAL_APP_STATE=\"" (base64-encode (transit-clj->str db)) "\";"
                                                        "var fulcro_network_csrf_token=\"" anti-forgery-token "\"")}})
@@ -249,4 +255,4 @@
     (dom/body
       (dom/div :#app
         (ui-root props))
-      (dom/script {:src "/assets/main/js/compiled/main.js"}))))
+      (dom/script {:src source}))))

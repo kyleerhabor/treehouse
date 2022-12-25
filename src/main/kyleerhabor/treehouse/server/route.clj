@@ -1,5 +1,6 @@
 (ns kyleerhabor.treehouse.server.route
   (:require
+   [clojure.java.io :as io]
    [clojure.string :as str]
    [kyleerhabor.treehouse.mutation :as mut]
    [kyleerhabor.treehouse.route :as route]
@@ -8,6 +9,7 @@
    [kyleerhabor.treehouse.server.query :as eql]
    [kyleerhabor.treehouse.server.response :refer [doctype forbidden]]
    [kyleerhabor.treehouse.ui :as ui]
+   [kyleerhabor.treehouse.util :refer [load-edn]]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
    [com.fulcrologic.fulcro.algorithms.denormalize :refer [db->tree]]
    [com.fulcrologic.fulcro.application :as app]
@@ -20,8 +22,8 @@
    [reitit.ring.coercion :as rrc]
    [reitit.ring.middleware.exception :as rrex]
    [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
-   [ring.middleware.x-headers :refer [wrap-content-type-options wrap-frame-options]]
    [ring.middleware.session :refer [wrap-session]]
+   [ring.middleware.x-headers :refer [wrap-content-type-options wrap-frame-options]]
    [ring.util.mime-type :refer [default-mime-types]]
    [ring.util.response :as res]))
 
@@ -46,12 +48,15 @@
     ;; The default route has no UI data.
     (:ui (:data match)) (mut/route* (route+/props match))))
 
+(def main-src (str "/assets/main/js/compiled/" (:output-name (first (load-edn (io/resource "public/assets/main/js/compiled/manifest.edn"))))))
+
 (defn page-handler [request]
   (let [db (current-db root-initial-db (rr/get-match request))
         props (db->tree (comp/get-query root db) db db)
         app (app/fulcro-app {:initial-db db})
         html (binding [comp/*app* app]
-               (dom/render-to-str (ui/document db props {:anti-forgery-token (:anti-forgery-token request)})))]
+               (dom/render-to-str (ui/document db props {:anti-forgery-token (:anti-forgery-token request)
+                                                         :source main-src})))]
     (-> (res/response (str doctype html))
       (res/content-type (get default-mime-types "html")))))
 
@@ -76,8 +81,8 @@
               (merge (dissoc (r/options route+/router) :compile)
                 {:data {:middleware [rrc/coerce-request-middleware
                                      [wrap-content-type-options :nosniff]
-                                     [wrap-frame-options :deny] ; Content-Security-Policy could replace this.
-                                     exception-middleware]}
+                                     ;; Content-Security-Policy could replace this.
+                                     [wrap-frame-options :deny]]}
                  :expand (route/merge-expand routes)
                  ::rmw/registry {:anti-forgery [wrap-anti-forgery {:error-response forbidden}]
                                  :session wrap-session
