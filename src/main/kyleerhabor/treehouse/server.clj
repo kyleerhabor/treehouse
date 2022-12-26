@@ -6,7 +6,8 @@
    [mount.core :as m :refer [defstate]]
    [reitit.ring :as rr]
    [ring.adapter.jetty :refer [run-jetty]]
-   [ring.middleware.gzip :refer [wrap-gzip]])
+   [ring.middleware.gzip :refer [wrap-gzip]]
+   [ring.middleware.not-modified :refer [wrap-not-modified]])
   (:gen-class))
 
 (def method-not-allowed (comp res/method-not-allowed r/allowed))
@@ -22,7 +23,8 @@
                  (rr/create-resource-handler {:path "/"})
                  ;; TODO: Figure out what to do with :not-acceptable.
                  (rr/create-default-handler (assoc default-handler-options :not-found default-handler)))
-               {:middleware [wrap-gzip
+               {:middleware [wrap-not-modified
+                             wrap-gzip
                              r/exception-middleware]}))
 
 (defstate server

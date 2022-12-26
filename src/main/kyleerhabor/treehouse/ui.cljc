@@ -27,7 +27,7 @@
                          %
                          (ui-content %)) children)]
     (case (keyword name)
-      :title (apply dom/h1 {:className (c :font-sans)} children)
+      :title (apply dom/h1 children)
       :text (apply dom/p {:className (c :font-serif)} children)
       (apply dom/div children))))
 
@@ -121,7 +121,10 @@
 (def ui-projects (comp/factory Projects))
 
 (defsc NotFound [_ _]
-  (dom/p "?"))
+  ;; TODO: Provide a body and stop the UI from present it in the UI for a split moment on page load.
+  {:query [::id]
+   :ident (fn [] (singleton ::?))
+   :initial-state {}})
 
 (def ui-not-found (comp/factory NotFound))
 
@@ -130,14 +133,18 @@
                   ::Articles (comp/get-query Articles)
                   ::Projects (comp/get-query Projects)
                   ::article/id (comp/get-query Article)
-                  ::project/id (comp/get-query Project)})
+                  ::project/id (comp/get-query Project)
+                  ::? (comp/get-query NotFound)})
    :ident (fn []
             (if-let [single (::id props)]
               [single ::id] ; Flip.
-              (let [c (cond
-                        (contains? props ::article/id) Article
-                        :else Project)]
-                (comp/get-ident c props))))}
+              (let [comp (cond
+                           (contains? props ::article/id) Article
+                           (contains? props ::project/id) Project
+                           :else NotFound)]
+                (comp/get-ident comp props))))
+   ;; Hope this won't cause issues.
+   :initial-state (fn [_] {})}
   (let [[name] (comp/get-ident this)
         route (case name
                 ::Home ui-home
@@ -178,56 +185,46 @@
   {:query [[:email '_]
            {[:discord '_] (comp/get-query DiscordHeading)}
            {[:github '_] (comp/get-query GithubHeading)}]
-   :initial-state {}
-   :css [[:.nav {:display "flex"
-                 :border-bottom "black solid"
-                 :justify-content "space-between"
-                 :gap "1em"}]
-         [:.navlist {:display "flex"
-                     :gap "0.4em"
-                     :list-style "none"
-                     :padding 0}]]}
-  (let [{:keys [nav navlist]} (css/get-classnames Heading)]
-    (dom/header {:classes [nav]}
-      (dom/nav
-        (dom/ul {:classes [navlist]}
-          (dom/li
-            (dom/a {:href (href+ :home)}
-              "Home"))
-          (dom/li
-            (dom/a {:href (href+ :articles)}
-              "Articles"))
-          (dom/li
-            (dom/a {:href (href+ :projects)}
-              "Projects"))))
-      (dom/nav
-        (dom/address
-          (dom/ul {:classes [navlist]}
-            (if email
-              (dom/li
-                (dom/div
-                  (dom/a {:href (str "mailto:" email)}
-                    "Email"))))
-            (if github
-              (dom/li
-                (ui-github-heading github)))
-            (if discord
-              (dom/li
-                (ui-discord-heading discord)))))))))
+   :initial-state {}}
+  (dom/header {:className (c :flex :justify-between)}
+    (dom/nav
+      (dom/ul {:className (c :flex)}
+        (dom/li
+          (dom/a {:href (href+ :home)}
+            "Home"))
+        (dom/li
+          (dom/a {:href (href+ :articles)}
+            "Articles"))
+        (dom/li
+          (dom/a {:href (href+ :projects)}
+            "Projects"))))
+    (dom/nav
+      (dom/address
+        (dom/ul {:className (c :flex)}
+          (if email
+            (dom/li
+              (dom/div
+                (dom/a {:href (str "mailto:" email)}
+                  "Email"))))
+          (if github
+            (dom/li
+              (ui-github-heading github)))
+          (if discord
+            (dom/li
+              (ui-discord-heading discord))))))))
 
 (def ui-heading (comp/factory Heading))
 
 (defsc App [_ {::keys [heading]
                :keys [route]}]
-  ;; I'd like :route to be global, but [:route '_], for some reason, doesn't work.
+  ;; I'd like :route to be global, but [:route '_] doesn't work for some reason.
   {:query [{:route (comp/get-query Router)}
            {::heading (comp/get-query Heading)}]
-   :initial-state (fn [_] {::heading (comp/get-initial-state Heading)})}
+   :initial-state (fn [_] {:route (comp/get-initial-state Router)
+                           ::heading (comp/get-initial-state Heading)})}
   (dom/div
     (ui-heading heading)
-    (if route
-      (ui-router route)
-      (ui-not-found {}))))
+    (ui-router route)))
 
 (def ui-app (comp/factory App))
 
@@ -238,23 +235,23 @@
 
 (def ui-root (comp/factory Root))
 
-(defn document [db props {:keys [anti-forgery-token source]}]
+(defn document [db props {:keys [anti-forgery-token]}]
   (dom/html {:lang "en-US"}
     (dom/head
-      (dom/meta {:charset "UTF-8"})
+      (dom/meta {:charset "utf-8"})
+      (dom/title "Kyle Erhabor")
       (dom/meta {:name "viewport"
                  :content "width=device-width, initial-scale=1"})
-      (dom/title "Kyle Erhabor")
       (dom/meta {:name "description"
                  :content "Kyle Erhabor is a software developer known under the pseudonym Klay."})
-      (dom/script {:dangerouslySetInnerHTML {:__html (str
-                                                       "window.INITIAL_APP_STATE=\"" (base64-encode (transit-clj->str db)) "\";"
-                                                       "var fulcro_network_csrf_token=\"" anti-forgery-token "\"")}})
-      ;; It's kind of annoying that Fulcro prepends a space when using :classes even when :className and .class aren't used.
-      (style-element {:component Root
+      ;; It's kind of annoying that Fulcro prepends a space when using :classes even when :className and (dom/... :.class) aren't used.
+      (style-element {:component Root ; Replace with MacroCSS?
                       :garden-flags {:pretty-print? false}})
       (dom/link {:href "/assets/main/css/compiled/stylo.css" :rel "stylesheet"}))
     (dom/body
       (dom/div :#app
         (ui-root props))
-      (dom/script {:src source}))))
+      (dom/script {:dangerouslySetInnerHTML {:__html (str
+                                                       "window.INITIAL_APP_STATE=\"" (base64-encode (transit-clj->str db)) "\";"
+                                                       "var fulcro_network_csrf_token=\"" anti-forgery-token "\"")}})
+      (dom/script {:src "/assets/main/js/compiled/main.js"}))))

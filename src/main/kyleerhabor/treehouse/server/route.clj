@@ -1,6 +1,5 @@
 (ns kyleerhabor.treehouse.server.route
   (:require
-   [clojure.java.io :as io]
    [clojure.string :as str]
    [kyleerhabor.treehouse.mutation :as mut]
    [kyleerhabor.treehouse.route :as route]
@@ -9,7 +8,6 @@
    [kyleerhabor.treehouse.server.query :as eql]
    [kyleerhabor.treehouse.server.response :refer [doctype forbidden]]
    [kyleerhabor.treehouse.ui :as ui]
-   [kyleerhabor.treehouse.util :refer [load-edn]]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
    [com.fulcrologic.fulcro.algorithms.denormalize :refer [db->tree]]
    [com.fulcrologic.fulcro.application :as app]
@@ -48,17 +46,15 @@
     ;; The default route has no UI data.
     (:ui (:data match)) (mut/route* (route+/props match))))
 
-(def main-src (str "/assets/main/js/compiled/" (:output-name (first (load-edn (io/resource "public/assets/main/js/compiled/manifest.edn"))))))
-
 (defn page-handler [request]
   (let [db (current-db root-initial-db (rr/get-match request))
         props (db->tree (comp/get-query root db) db db)
         app (app/fulcro-app {:initial-db db})
         html (binding [comp/*app* app]
-               (dom/render-to-str (ui/document db props {:anti-forgery-token (:anti-forgery-token request)
-                                                         :source main-src})))]
+               (dom/render-to-str (ui/document db props {:anti-forgery-token (:anti-forgery-token request)})))]
     (-> (res/response (str doctype html))
-      (res/content-type (get default-mime-types "html")))))
+      (res/content-type (get default-mime-types "html"))
+      (res/charset "utf-8"))))
 
 (defn api-handler [{query :transit-params}]
   (let [r (eql/parse query)]
@@ -79,8 +75,8 @@
 
 (def router (rr/router (r/routes route+/router)
               (merge (dissoc (r/options route+/router) :compile)
+                ;; TODO: Move wrap-content-type-options and wrap-frame-options so API requests aren't included.
                 {:data {:middleware [rrc/coerce-request-middleware
-                                     ;; TODO: Move this so API requests aren't included (or just use CSP).
                                      [wrap-content-type-options :nosniff]
                                      ;; Content-Security-Policy could replace this.
                                      [wrap-frame-options :deny]]}

@@ -1,7 +1,5 @@
 (ns kyleerhabor.treehouse.build
   (:require
-   [clojure.edn :as edn]
-   [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.build.api :as b]))
 
@@ -11,14 +9,8 @@
 (def basis (b/create-basis {:aliases [:server]}))
 (def file (str "target/" (name lib) "-" version "-standalone.jar"))
 
-(def compiled "public/assets/main/js/compiled")
-(def manifest (str compiled "/manifest.edn"))
-
-(defn edn [source]
-  (edn/read (java.io.PushbackReader. (io/reader source))))
-
 (defn glob
-  "Produces a glob string matching a number of patterns in the `patterns` collection."
+  "Returns a glob string matching patterns in `patterns`. Cannot contain curly brackets."
   [patterns]
   (str "{" (str/join "," patterns) "}"))
 
@@ -34,17 +26,15 @@
                               "content/**"
                               "articles/**"
                               "public/robots.txt"
-                              ;; Used by the server to resolve the main JS file.
-                              manifest]}}]
+                              "public/assets/main/js/compiled/main.js"
+                              "public/assets/main/js/compiled/main.js.map" ; For debugging in production.
+                              "public/assets/main/css/compiled/stylo.css"]}}]
   (clean nil)
   (release nil)
   ;; The main JS file is hashed and we only want the file produced for this release.
-  (let [module (first (edn (io/resource manifest)))
-        main (str compiled "/" (:output-name module))
-        include (conj include main (str main ".map"))]
-    (b/copy-dir {:src-dirs ["src/main" "resources"]
-                 :include (glob include)
-                 :target-dir class-dir}))
+  (b/copy-dir {:src-dirs ["src/main" "resources"]
+               :include (glob include)
+               :target-dir class-dir})
   (b/compile-clj {:basis basis
                   :class-dir class-dir
                   :src-dirs ["src/main"]
