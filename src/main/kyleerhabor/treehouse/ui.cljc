@@ -1,20 +1,18 @@
 (ns kyleerhabor.treehouse.ui
   (:require
-   [kyleerhabor.treehouse.schema.project :as-alias project]
+   [#?(:clj com.fulcrologic.fulcro.dom-server
+       :cljs com.fulcrologic.fulcro.dom) :as dom]
+   [com.fulcrologic.fulcro-css.css :as css]
+   [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
+   [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]]
+   [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
    [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
    [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
    [kyleerhabor.treehouse.route :refer [href+]]
    [kyleerhabor.treehouse.schema.article :as-alias article]
    [kyleerhabor.treehouse.schema.github.repository :as-alias gr]
-   [kyleerhabor.treehouse.ui.icon :as icon]
-   [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
-   [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]]
-   [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
-   [#?(:clj com.fulcrologic.fulcro.dom-server
-       :cljs com.fulcrologic.fulcro.dom) :as dom]
-   [com.fulcrologic.fulcro-css.css :as css]
-   [com.fulcrologic.fulcro-css.css-injection :refer [style-element]]
-   [stylo.core :refer [c]]))
+   [kyleerhabor.treehouse.schema.project :as-alias project]
+   [kyleerhabor.treehouse.ui.icon :as icon]))
 
 (defn singleton [id]
   [::id id])
@@ -28,7 +26,7 @@
                          (ui-content %)) children)]
     (case (keyword name)
       :title (apply dom/h1 children)
-      :text (apply dom/p {:className (c :font-serif)} children)
+      :text (apply dom/p children)
       (apply dom/div children))))
 
 (def ui-content (comp/factory Content))
@@ -185,33 +183,42 @@
   {:query [[:email '_]
            {[:discord '_] (comp/get-query DiscordHeading)}
            {[:github '_] (comp/get-query GithubHeading)}]
-   :initial-state {}}
-  (dom/header {:className (c :flex :justify-between)}
-    (dom/nav
-      (dom/ul {:className (c :flex)}
-        (dom/li
-          (dom/a {:href (href+ :home)}
-            "Home"))
-        (dom/li
-          (dom/a {:href (href+ :articles)}
-            "Articles"))
-        (dom/li
-          (dom/a {:href (href+ :projects)}
-            "Projects"))))
-    (dom/nav
-      (dom/address
-        (dom/ul {:className (c :flex)}
-          (if email
-            (dom/li
-              (dom/div
-                (dom/a {:href (str "mailto:" email)}
-                  "Email"))))
-          (if github
-            (dom/li
-              (ui-github-heading github)))
-          (if discord
-            (dom/li
-              (ui-discord-heading discord))))))))
+   :initial-state {}
+   :css [[:.nav {:display "flex"
+                 :border-bottom "black solid"
+                 :justify-content "space-between"
+                 :gap "1em"}]
+         [:.navlist {:display "flex"
+                     :gap "0.4em"
+                     :list-style "none"
+                     :padding 0}]]}
+  (let [{:keys [nav navlist]} (css/get-classnames Heading)]
+    (dom/header {:classes [nav]}
+      (dom/nav
+        (dom/ul {:classes [navlist]}
+          (dom/li
+            (dom/a {:href (href+ :home)}
+              "Home"))
+          (dom/li
+            (dom/a {:href (href+ :articles)}
+              "Articles"))
+          (dom/li
+            (dom/a {:href (href+ :projects)}
+              "Projects"))))
+      (dom/nav
+        (dom/address
+          (dom/ul {:classes [navlist]}
+            (if email
+              (dom/li
+                (dom/div
+                  (dom/a {:href (str "mailto:" email)}
+                    "Email"))))
+            (if github
+              (dom/li
+                (ui-github-heading github)))
+            (if discord
+              (dom/li
+                (ui-discord-heading discord)))))))))
 
 (def ui-heading (comp/factory Heading))
 
@@ -245,9 +252,8 @@
       (dom/meta {:name "description"
                  :content "Kyle Erhabor is a software developer known under the pseudonym Klay."})
       ;; It's kind of annoying that Fulcro prepends a space when using :classes even when :className and (dom/... :.class) aren't used.
-      (style-element {:component Root ; Replace with MacroCSS?
-                      :garden-flags {:pretty-print? false}})
-      (dom/link {:href "/assets/main/css/compiled/stylo.css" :rel "stylesheet"}))
+      (dom/link {:href "/assets/main/css/compiled/main.css"
+                 :rel "stylesheet"}))
     (dom/body
       (dom/div :#app
         (ui-root props))

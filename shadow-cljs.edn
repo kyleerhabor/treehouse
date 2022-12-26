@@ -2,7 +2,7 @@
  :builds {:main {:target :browser
                  :output-dir "resources/public/assets/main/js/compiled"
                  :asset-path "/assets/main/js/compiled"
-                 :build-hooks [(stylo.shadow/reload "resources/public/assets/main/css/compiled/stylo.css")]
+                 :build-hooks [(kyleerhabor.treehouse.shadow/css)]
                  :modules {:main {:init-fn kyleerhabor.treehouse.client/init
                                   :entries [kyleerhabor.treehouse.client]}}
                  :devtools {:after-load kyleerhabor.treehouse.client/refresh

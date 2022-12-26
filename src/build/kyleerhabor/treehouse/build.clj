@@ -28,7 +28,7 @@
                               "public/robots.txt"
                               "public/assets/main/js/compiled/main.js"
                               "public/assets/main/js/compiled/main.js.map" ; For debugging in production.
-                              "public/assets/main/css/compiled/stylo.css"]}}]
+                              "public/assets/main/css/compiled/main.css"]}}]
   (clean nil)
   (release nil)
   ;; The main JS file is hashed and we only want the file produced for this release.
