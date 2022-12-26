@@ -191,7 +191,7 @@
          [:.navlist {:display "flex"
                      :gap "0.4em"
                      :list-style "none"
-                     :padding 0}]]}
+                     :padding "0"}]]}
   (let [{:keys [nav navlist]} (css/get-classnames Heading)]
     (dom/header {:classes [nav]}
       (dom/nav
