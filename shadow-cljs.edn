@@ -10,7 +10,6 @@
                                        com.fulcrologic.fulcro.inspect.dom-picker-preload
                                        kyleerhabor.treehouse.shadow.preload]
                             :watch-dir "resources/public"}
-                 :closure-defines {malli.registry/type "custom"}
                  :compiler-options {:source-map true}
                  :release {:compiler-options {:fn-invoke-direct true
                                               :source-map-detail-level :symbols}}}}}

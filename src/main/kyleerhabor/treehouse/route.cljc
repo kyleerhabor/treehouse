@@ -1,6 +1,5 @@
 (ns kyleerhabor.treehouse.route
   (:require
-   [kyleerhabor.treehouse.schema]
    [reitit.core :as r]
    [reitit.coercion :as rc]
    [reitit.coercion.malli :refer [coercion]]))
