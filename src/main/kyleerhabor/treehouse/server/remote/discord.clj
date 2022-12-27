@@ -7,7 +7,8 @@
    [datalevin.core :as d]
    [martian.core :as m]
    [mount.core :as mount]
-   [schema.core :as s]))
+   [schema.core :as s]
+   [taoensso.timbre :as log]))
 
 (def api-url "https://discord.com/api")
 
@@ -85,4 +86,4 @@
                                                                               :redirect-uri (::redirect config)))))
     (and token refresh) (save-access {:access_token token
                                       :refresh_token refresh})
-    :else (println "No input.")))
+    :else (log/error "No input.")))

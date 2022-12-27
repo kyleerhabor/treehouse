@@ -1,8 +1,8 @@
 (ns kyleerhabor.treehouse.shadow
   (:require
-   [shadow.build :as-alias build]
    [kyleerhabor.treehouse.ui :as ui]
-   [com.fulcrologic.fulcro-css.css-injection :refer [compute-css]]))
+   [com.fulcrologic.fulcro-css.css-injection :refer [compute-css]]
+   [shadow.build :as-alias build]))
 
 ;; It may be better to embed the CSS in production rather than link it, but that has no caching benefits.
 (defn css

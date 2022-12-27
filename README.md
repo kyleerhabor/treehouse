@@ -43,6 +43,12 @@ conform to the following structure:
  :kyleerhabor.treehouse.server.remote.github/token ...}
 ```
 
+#### Logging
+
+[Timbre](https://github.com/ptaoussanis/timbre) is used for logging. While the project handles most configuration, the
+`TAOENSSO_TIMBRE_MIN_LEVEL_EDN` environment variable or `taoensso.timbre.min-level.edn` Java system property can be set
+to elide logs under a level, which is useful in production for performance.
+
 ### Discord
 
 A [Discord application](https://discord.com/developers/applications) must be used to communincate with Discord.
@@ -93,15 +99,14 @@ The `java` command with the `-jar` option can be used to run the project.
 java --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar target/treehouse-...-standalone.jar
 ```
 
-The `--add-opens` options are required for the database. When using configuration, the `-Dconf` Java system property can
-be used to provide a configuration file. When using environment variables on the command line, the `env` command can be
-used to handle keys with dots.
+The `--add-opens` options are required for the database. When using environment variables on the command line, the `env`
+command can be used to handle keys with dots. A more complete version of the command to run the project can be seen below.
 
 ```sh
-env KYLEERHABOR.TREEHOUSE.SERVER.REMOTE.DISCORD___CLIENT_SECRET=... KYLEERHABOR.TREEHOUSE.SERVER.REMOTE.GITHUB___TOKEN=... java -Dconf=... --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar target/treehouse-...-standalone.jar
+env KYLEERHABOR.TREEHOUSE.SERVER.REMOTE.DISCORD___CLIENT_SECRET=... KYLEERHABOR.TREEHOUSE.SERVER.REMOTE.GITHUB___TOKEN=... TAOENSSO_TIMBRE_MIN_LEVEL_EDN=:info java -Dconf=... --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar target/treehouse-...-standalone.jar
 ```
 
-Afterwards, navigate to `http://localhost:.../` to see the home page, with `...` representing the port used in the config.
+After the server starts, navigate to `http://localhost:.../` to see the home page, with `...` representing the port used in the config.
 
 ## License
 

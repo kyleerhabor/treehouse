@@ -7,7 +7,8 @@
                                   :entries [kyleerhabor.treehouse.client]}}
                  :devtools {:after-load kyleerhabor.treehouse.client/refresh
                             :preloads [com.fulcrologic.fulcro.inspect.preload
-                                       com.fulcrologic.fulcro.inspect.dom-picker-preload]
+                                       com.fulcrologic.fulcro.inspect.dom-picker-preload
+                                       kyleerhabor.treehouse.shadow.preload]
                             :watch-dir "resources/public"}
                  :closure-defines {malli.registry/type "custom"}
                  :compiler-options {:source-map true}

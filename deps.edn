@@ -2,6 +2,7 @@
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}
         com.fulcrologic/fulcro {:mvn/version "3.5.32"}
         com.fulcrologic/fulcro-garden-css {:mvn/version "3.0.9"}
+        com.taoensso/timbre {:mvn/version "6.0.4"}
         com.wsscode/pathom {:mvn/version "2.4.0"}
         metosin/malli {:mvn/version "0.9.2"}
         metosin/reitit-core {:mvn/version "0.5.18"}

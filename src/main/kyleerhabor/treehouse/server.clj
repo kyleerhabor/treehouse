@@ -7,7 +7,8 @@
    [reitit.ring :as rr]
    [ring.adapter.jetty :refer [run-jetty]]
    [ring.middleware.gzip :refer [wrap-gzip]]
-   [ring.middleware.not-modified :refer [wrap-not-modified]])
+   [ring.middleware.not-modified :refer [wrap-not-modified]]
+   [taoensso.timbre :as log])
   (:gen-class))
 
 (def method-not-allowed (comp res/method-not-allowed r/allowed))
@@ -29,9 +30,11 @@
                              r/exception-middleware]}))
 
 (defstate server
-  :start (run-jetty handler {:port (::port config)
-                             :join? false
-                             :send-server-version? false})
+  :start (let [port (::port config)]
+           (run-jetty handler {:port port
+                               :join? false
+                               :send-server-version? false})
+           (log/info "Server running on port" port))
   :stop (.stop server))
 
 (defn -main []
