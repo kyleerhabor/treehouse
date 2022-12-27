@@ -75,7 +75,7 @@ folders. By default, `:include` lists the following:
 - `resources/public/assets/main/js/compiled/main.js.map`
 - `resources/public/assets/main/css/compiled/main.css`
 
-To extend the list, pass a collection with `:include`.
+To provide a custom list, pass a collection with `:include`.
 
 ```sh
 clojure -T:build uberjar :include '["..." "..." ...]'
