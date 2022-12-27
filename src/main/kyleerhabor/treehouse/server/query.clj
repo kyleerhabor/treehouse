@@ -3,8 +3,6 @@
    [clojure.java.io :as io]
    [clojure.set :refer [rename-keys]]
    [kyleerhabor.treehouse.schema.project :as-alias project]
-   [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
-   [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
    [kyleerhabor.treehouse.schema :as s]
    [kyleerhabor.treehouse.schema.article :as-alias article]
    [kyleerhabor.treehouse.schema.github.repository :as-alias gr]
@@ -35,19 +33,6 @@
                      (rename-keys {:path :content}))) projects))))
 
 (def projs-map (update projs :projects #(zipmap (map :id %) %)))
-
-(defresolver discord []
-  {::pc/output [{:discord [::du/id ::du/username ::du/discriminator]}]}
-  {:discord (-> (c/current-discord-user)
-              (select-keys [:id :username :discriminator])
-              (rename-keys {:id ::du/id
-                            :username ::du/username
-                            :discriminator ::du/discriminator}))})
-
-(defresolver github []
-  {::pc/output [{:github [::gu/id ::gu/url]}]}
-  {:github (rename-keys (c/current-github-viewer) {:id ::gu/id
-                                                   :url ::gu/url})})
 
 (defresolver articles []
   {::pc/output [{:articles [::article/id]}]}
@@ -84,7 +69,7 @@
 
 (def home (pc/constantly-resolver :home home-content))
 
-(def registry [discord github articles article-title article-content projects project-name project-content project-github home])
+(def registry [articles article-title article-content projects project-name project-content project-github home])
 
 (def parser (p/parser {::p/env {::p/reader [p/map-reader pc/reader2 pc/ident-reader pc/index-reader]
                                 ::pc/mutation-join-globals [:tempids]}

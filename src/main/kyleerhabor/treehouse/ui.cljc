@@ -6,8 +6,8 @@
    [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
    [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]]
    [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
-   [kyleerhabor.treehouse.model.media.discord.user :as-alias du]
-   [kyleerhabor.treehouse.model.media.github.user :as-alias gu]
+   [kyleerhabor.treehouse.schema.discord.user :as-alias du]
+   [kyleerhabor.treehouse.schema.github.user :as-alias gu]
    [kyleerhabor.treehouse.route :refer [href+]]
    [kyleerhabor.treehouse.schema.article :as-alias article]
    [kyleerhabor.treehouse.schema.github.repository :as-alias gr]

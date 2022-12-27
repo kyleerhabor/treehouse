@@ -1,9 +1,12 @@
 (ns kyleerhabor.treehouse.server.route
   (:require
+   [clojure.set :refer [rename-keys]]
    [clojure.string :as str]
    [kyleerhabor.treehouse.mutation :as mut]
    [kyleerhabor.treehouse.route :as route]
    [kyleerhabor.treehouse.route.ui :as route+]
+   [kyleerhabor.treehouse.schema.discord.user :as-alias du]
+   [kyleerhabor.treehouse.schema.github.user :as-alias gu]
    [kyleerhabor.treehouse.server.config :as-alias config :refer [config]]
    [kyleerhabor.treehouse.server.query :as eql]
    [kyleerhabor.treehouse.server.query.cache :as cache]
@@ -42,13 +45,23 @@
 
 (def root-initial-db (initial-db root))
 
-;; This could potentially be simpler, since config and match don't *really* need to be *in* there.
 (defn current-db [db match]
-  (let [db (assoc db :email (::config/email config))
-        db (assoc db :github (merge/merge-component db ui/DiscordUser (cache/current-discord-user)))]
+  (let [db (-> db
+             (assoc :email (::config/email config))
+             (merge/merge-component ui/DiscordUser (-> (cache/current-discord-user)
+                                                     (select-keys [:id :username :discriminator])
+                                                     (rename-keys {:id ::du/id
+                                                                   :username ::du/username
+                                                                   :discriminator ::du/discriminator}))
+               :replace [:discord])
+             (merge/merge-component ui/GithubUser (-> (cache/current-github-viewer)
+                                                    (select-keys [:id :url])
+                                                    (rename-keys {:id ::gu/id
+                                                                  :url ::gu/url}))
+               :replace [:github]))]
    (cond-> db
-    ;; The default route has no UI data.
-    (:ui (:data match)) (mut/route* (route+/props match)))))
+     ;; The default route has no UI data.
+     (:ui (:data match)) (mut/route* (route+/props match)))))
 
 (defn page-handler [request]
   (let [db (current-db root-initial-db (rr/get-match request))

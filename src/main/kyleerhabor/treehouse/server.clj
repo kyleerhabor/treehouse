@@ -20,6 +20,7 @@
 (def handler (rr/ring-handler r/router
                (rr/routes
                  (rr/redirect-trailing-slash-handler)
+                 ;; TODO: Serve resources myself (for caching benefits).
                  (rr/create-resource-handler {:path "/"})
                  ;; TODO: Figure out what to do with :not-acceptable.
                  (rr/create-default-handler (assoc default-handler-options :not-found default-handler)))

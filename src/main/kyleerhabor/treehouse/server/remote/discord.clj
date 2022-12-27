@@ -56,8 +56,6 @@
                                                :interceptors [authorization]})]
                {:interceptors (concat m/default-interceptors interceptors r/http-interceptors)}))
 
-;; TODO: Make requesting more data-oriented.
-
 ;; Config may not be initialized, so delay execution.
 (def exchange-params* (delay {:client-id (::client-id config)
                               :client-secret (::client-secret config)}))
@@ -65,14 +63,17 @@
 (def exchange-params (partial deref exchange-params*))
 
 (defn request [route params]
-  (let [res (m/response-for discord route params)]
-    (if (res/unauthorized? res)
-      (do
-        (save-access (:body (m/response-for discord :exchange-refresh-token (assoc (exchange-params)
-                                                                              :grant-type "refresh_token"
-                                                                              :refresh-token (current-refresh-token)))))
-        (m/response-for discord route params)) 
-      res)))
+  (let [res (m/response-for discord route params)
+        res* (if (res/unauthorized? res)
+               (do
+                 (save-access (:body (m/response-for discord :exchange-refresh-token (assoc (exchange-params)
+                                                                                       :grant-type "refresh_token"
+                                                                                       :refresh-token (current-refresh-token)))))
+                 (m/response-for discord route params))
+               res)]
+    (:body res*)))
+
+
 
 ;; Used by the :discord deps alias.
 (defn store [{:keys [code token refresh]}]
