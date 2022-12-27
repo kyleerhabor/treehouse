@@ -49,7 +49,7 @@ A [Discord application](https://discord.com/developers/applications) must be use
 1. On the OAuth2 page, insert the redirect URI to be used by the project
 2. On the URL Generator page, select the identify scope and redirect URI mentioned previously, and use the generated URL
 to authorize the application
-3. In the URL that was redirected to, copy the code query parameter value and run `clojure -X:server:discord :code '"..."'`
+3. In the URL that was redirected to, copy the code query parameter value and run `clojure -X:server:discord :code '"..."'`,
 where `...` is the code
 
 The last step will exchange the token for an access and refresh token the project will use to communicate with Discord.
