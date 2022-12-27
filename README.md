@@ -75,27 +75,27 @@ folders. By default, `:include` lists the following:
 - `resources/public/assets/main/js/compiled/main.js.map`
 - `resources/public/assets/main/css/compiled/main.css`
 
-To provide a custom list, pass a collection with `:include`.
+To provide a list, pass a collection with `:include`.
 
 ```sh
 clojure -T:build uberjar :include '["..." "..." ...]'
 ```
 
-The build will compile ClojureScript to the `compiled` directories under `resources/public/assets` and produce an
-uberjar in `target/treehouse-...-standalone.jar`, where `...` is the current version. As the uberjar is just a JAR, it
-can be compiled locally and distributed elsewhere (e.g. to a host/server).
+The build will compile ClojureScript to the `compiled` folders under `resources/public/assets` and produce an uberjar in
+`target/treehouse-...-standalone.jar`, where `...` is the current version. As the uberjar is just a JAR, it can be
+compiled locally and distributed elsewhere (e.g. to a host/server).
 
 ## Running
 
 The `java` command with the `-jar` option can be used to run the project.
 
 ```sh
-java --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar target/treehouse-0.1.0-standalone.jar
+java --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar target/treehouse-...-standalone.jar
 ```
 
 The `--add-opens` options are required for the database. When using configuration, the `-Dconf` Java system property can
-be used to provide a configuration file. When using environment variables on the command line, if a key contains dots,
-the `env` can be prepended to the command.
+be used to provide a configuration file. When using environment variables on the command line, the `env` command can be
+used to handle keys with dots.
 
 ```sh
 env KYLEERHABOR.TREEHOUSE.SERVER.REMOTE.DISCORD___CLIENT_SECRET=... KYLEERHABOR.TREEHOUSE.SERVER.REMOTE.GITHUB___TOKEN=... java -Dconf=... --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar target/treehouse-0.1.0-standalone.jar
