@@ -1,11 +1,6 @@
 (ns kyleerhabor.treehouse.schema
   (:require
-   [malli.core :as m]
-   [malli.registry :as mr]))
-
-(def registry (merge (m/base-schemas) (m/sequence-schemas) (m/type-schemas)))
-
-#?(:cljs (mr/set-default-registry! registry))
+   [malli.core :as m]))
 
 (def id-len 4)
 
