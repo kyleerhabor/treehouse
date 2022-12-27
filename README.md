@@ -50,11 +50,11 @@ A [Discord application](https://discord.com/developers/applications) must be use
 2. On the URL Generator page, select the identify scope and redirect URI mentioned previously, and use the generated URL
 to authorize the application
 3. In the URL that was redirected to, copy the code query parameter value and run `clojure -X:server:discord :code '"..."'`
-where `...` is the code.
+where `...` is the code
 
 The last step will exchange the token for an access and refresh token the project will use to communicate with Discord.
-If you already have one, run `clojure -X:server:discord :token '"..."' :refresh '"..."'` instead where token associates
-the access token and refresh associates the refresh token.
+If you already have one, run `clojure -X:server:discord :token '"..."' :refresh '"..."'` instead, where `:token`
+associates the access token and `:refresh` associates the refresh token.
 
 ### GitHub
 
@@ -64,13 +64,44 @@ tokens are not supported for the server's operations, so ignore the suggestion t
 
 ### Build
 
-To compile the project, run `clojure -T:build uberjar`. This will compile ClojureScript to `resources/public/assets/main/js/compiled/main.js` and produce an uberjar (a JAR with dependencies) in `target/treehouse-...-standalone.jar`, where `...` is the
-current version. As the uberjar is just a JAR, it can be compiled locally and distributed elsewhere (e.g. to a host).
+The `build` alias with the `uberjar` option can be used to compile the project. The alias accepts an `:include` option
+for selecting files to be packaged into the produced uberjar (a JAR with dependencies) from the `src` and `resources`
+folders. By default, `:include` lists the following:
+- `src/main/kyleerhabor`
+- `resources/content`
+- `resources/articles`
+- `resources/public/robots.txt`
+- `resources/public/assets/main/js/compiled/main.js`
+- `resources/public/assets/main/js/compiled/main.js.map`
+- `resources/public/assets/main/css/compiled/main.css`
+
+To extend the list, pass a collection with `:include`.
+
+```sh
+clojure -T:build uberjar :include '["..." "..." ...]'
+```
+
+The build will compile ClojureScript to the `compiled` directories under `resources/public/assets` and produce an
+uberjar in `target/treehouse-...-standalone.jar`, where `...` is the current version. As the uberjar is just a JAR, it
+can be compiled locally and distributed elsewhere (e.g. to a host/server).
 
 ## Running
 
-To run the project, run `java -jar target/treehouse-...-standalone.jar`, where `...` is the current version. Navigate to
-`http://localhost:.../` to see the home page, with `...` being the port used in the config.
+The `java` command with the `-jar` option can be used to run the project.
+
+```sh
+java --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar target/treehouse-0.1.0-standalone.jar
+```
+
+The `--add-opens` options are required for the database. When using configuration, the `-Dconf` Java system property can
+be used to provide a configuration file. When using environment variables on the command line, if a key contains dots,
+the `env` can be prepended to the command.
+
+```sh
+env KYLEERHABOR.TREEHOUSE.SERVER.REMOTE.DISCORD___CLIENT_SECRET=... KYLEERHABOR.TREEHOUSE.SERVER.REMOTE.GITHUB___TOKEN=... java -Dconf=... --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar target/treehouse-0.1.0-standalone.jar
+```
+
+Afterwards, navigate to `http://localhost:.../` to see the home page, with `...` representing the port used in the config.
 
 ## License
 
