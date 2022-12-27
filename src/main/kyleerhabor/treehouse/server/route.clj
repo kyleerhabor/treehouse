@@ -6,8 +6,10 @@
    [kyleerhabor.treehouse.route.ui :as route+]
    [kyleerhabor.treehouse.server.config :as-alias config :refer [config]]
    [kyleerhabor.treehouse.server.query :as eql]
+   [kyleerhabor.treehouse.server.query.cache :as cache]
    [kyleerhabor.treehouse.server.response :refer [doctype forbidden]]
    [kyleerhabor.treehouse.ui :as ui]
+   [com.fulcrologic.fulcro.algorithms.merge :as merge]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
    [com.fulcrologic.fulcro.algorithms.denormalize :refer [db->tree]]
    [com.fulcrologic.fulcro.application :as app]
@@ -42,9 +44,11 @@
 
 ;; This could potentially be simpler, since config and match don't *really* need to be *in* there.
 (defn current-db [db match]
-  (cond-> (assoc db :email (::config/email config))
+  (let [db (assoc db :email (::config/email config))
+        db (assoc db :github (merge/merge-component db ui/DiscordUser (cache/current-discord-user)))]
+   (cond-> db
     ;; The default route has no UI data.
-    (:ui (:data match)) (mut/route* (route+/props match))))
+    (:ui (:data match)) (mut/route* (route+/props match)))))
 
 (defn page-handler [request]
   (let [db (current-db root-initial-db (rr/get-match request))

@@ -5,6 +5,7 @@
    [kyleerhabor.treehouse.mutation :as mut]
    [kyleerhabor.treehouse.route.ui :as route+]
    [kyleerhabor.treehouse.ui :as ui]
+   [kyleerhabor.treehouse.util :refer [after noop]]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
    [com.fulcrologic.fulcro.application :as app]
    [com.fulcrologic.fulcro.components :as comp]
@@ -14,10 +15,10 @@
 (defn init []
   (reset! (::app/state-atom app) (ssr/get-SSR-initial-state))
   (app/set-root! app ui/Root {:initialize-state? true})
-  (rfe/start! router (fn [match _]
-                       (if-let [handler (:handler (:data match))]
-                         (handler match))
-                       (comp/transact! app [(mut/route (some-> match route+/props))])) {:use-fragment false})
+  (rfe/start! router (after noop (fn [match _]
+                                   (if-let [handler (:handler (:data match))]
+                                     (handler match))
+                                   (comp/transact! app [(mut/route (some-> match route+/props))]))) {:use-fragment false})
   (load! app :discord ui/DiscordUser)
   (load! app :github ui/GithubUser)
   (mount {:hydrate? true

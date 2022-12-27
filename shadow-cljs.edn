@@ -9,5 +9,7 @@
                             :preloads [com.fulcrologic.fulcro.inspect.preload
                                        com.fulcrologic.fulcro.inspect.dom-picker-preload]
                             :watch-dir "resources/public"}
-                 ;; TODO: Try out :infer-externs :all for release.
-                 :compiler-options {:source-map true}}}}
+                 :closure-defines {malli.registry/type "custom"}
+                 :compiler-options {:source-map true}
+                 :release {:compiler-options {:fn-invoke-direct true
+                                              :source-map-detail-level :symbols}}}}}
