@@ -30,11 +30,12 @@
                              r/exception-middleware]}))
 
 (defstate server
-  :start (let [port (::port config)]
-           (run-jetty handler {:port port
-                               :join? false
-                               :send-server-version? false})
-           (log/info "Server running on port" port))
+  :start (let [port (::port config)
+               server (run-jetty handler {:port port
+                                          :join? false
+                                          :send-server-version? false})]
+           (log/info "Server running on port" port)
+           server)
   :stop (.stop server))
 
 (defn -main []
