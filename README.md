@@ -47,7 +47,7 @@ conform to the following structure:
 
 [Timbre](https://github.com/ptaoussanis/timbre) is used for logging. While the project handles most configuration, the
 `TAOENSSO_TIMBRE_MIN_LEVEL_EDN` environment variable or `taoensso.timbre.min-level.edn` Java system property can be set
-to elide logs under a level, which is useful in production for performance.
+when building to elide logs under a level, which is useful in production for performance.
 
 ### Discord
 
@@ -103,7 +103,7 @@ The `--add-opens` options are required for the database. When using environment 
 command can be used to handle keys with dots. A more complete version of the command to run the project can be seen below.
 
 ```sh
-env KYLEERHABOR.TREEHOUSE.SERVER.REMOTE.DISCORD___CLIENT_SECRET=... KYLEERHABOR.TREEHOUSE.SERVER.REMOTE.GITHUB___TOKEN=... TAOENSSO_TIMBRE_MIN_LEVEL_EDN=:info java -Dconf=... --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar target/treehouse-...-standalone.jar
+env KYLEERHABOR.TREEHOUSE.SERVER.REMOTE.DISCORD___CLIENT_SECRET=... KYLEERHABOR.TREEHOUSE.SERVER.REMOTE.GITHUB___TOKEN=... java -Dconf=... --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar target/treehouse-...-standalone.jar
 ```
 
 After the server starts, navigate to `http://localhost:.../` to see the home page, with `...` representing the port used in the config.
