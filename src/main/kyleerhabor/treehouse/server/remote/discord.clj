@@ -14,7 +14,7 @@
 
 (def api-version 10)
 
-(def user-agent (str "DiscordBot (" config/url ", " (subs config/version 1) ")"))
+(def api-user-agent (str "DiscordBot (" config/url ", " (subs config/version 1) ")"))
 
 (defn current-access-token []
   (d/datom-v (db/latest-datom (d/datoms @db/conn :ave ::access-token))))
@@ -30,7 +30,7 @@
 (def user-agent
   {:name ::user-agent
    :enter (fn [ctx]
-            (assoc-in ctx [:request :headers "User-Agent"] user-agent))})
+            (assoc-in ctx [:request :headers "User-Agent"] api-user-agent))})
 
 (def authorization (r/authorization (fn []
                                       {:type "Bearer"
