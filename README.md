@@ -27,7 +27,9 @@ Properties found in later sources will merge/override properties in previous sou
 conform to the following structure:
 
 ```clojure
-{;; The port the server should run on.
+{;; The URL to the project homepage (i.e. info on the project, could be a GitHub repo)
+ :kyleerhabor.treehouse.config/source ...
+ ;; The port the server should run on.
  :kyleerhabor.treehouse.server/port ...
  ;; The email to display on the home page.
  :kyleerhabor.treehouse.server.config/email ...

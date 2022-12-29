@@ -1,9 +1,11 @@
 (ns kyleerhabor.treehouse.server.remote.discord
   (:require
+   [kyleerhabor.treehouse.config :as-alias cfg]
    [kyleerhabor.treehouse.server.remote :as r]
-   [kyleerhabor.treehouse.server.config :refer [config]]
+   [kyleerhabor.treehouse.server.config :refer [config project]]
    [kyleerhabor.treehouse.server.database :as db]
    [kyleerhabor.treehouse.server.response :as res]
+   [kyleerhabor.treehouse.util :refer [once]]
    [datalevin.core :as d]
    [martian.core :as m]
    [mount.core :as mount]
@@ -13,6 +15,8 @@
 (def api-url "https://discord.com/api")
 
 (def api-version 10)
+
+(def api-user-agent (once (str "DiscordBot (" (::cfg/source config) ", " (:version project) ")")))
 
 (defn current-access-token []
   (d/datom-v (db/latest-datom (d/datoms @db/conn :ave ::access-token))))
@@ -25,11 +29,16 @@
   (d/transact! db/conn [{::access-token access
                          ::refresh-token refresh}]))
 
+(def user-agent
+  {:name ::user-agent
+   :enter (fn [ctx]
+            (assoc-in ctx [:request :headers "User-Agent"] (api-user-agent)))})
+
 (def authorization (r/authorization (fn []
                                       {:type "Bearer"
                                        :token (current-access-token)})))
 
-(def interceptors [authorization r/user-agent])
+(def interceptors [authorization user-agent])
 
 (def discord (m/bootstrap api-url [{:route-name :exchange-access-token
                                     :part-parts ["/oauth2/token"]
@@ -57,11 +66,8 @@
                                                :interceptors [authorization]})]
                {:interceptors (concat m/default-interceptors interceptors r/http-interceptors)}))
 
-;; Config may not be initialized, so delay execution.
-(def exchange-params* (delay {:client-id (::client-id config)
-                              :client-secret (::client-secret config)}))
-
-(def exchange-params (partial deref exchange-params*))
+(def exchange-params (once {:client-id (::client-id config)
+                            :client-secret (::client-secret config)}))
 
 (defn request [route params]
   (let [res (m/response-for discord route params)

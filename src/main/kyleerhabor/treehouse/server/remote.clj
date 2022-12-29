@@ -10,11 +10,6 @@
             (let [{:keys [type token]} (f)]
               (assoc-in ctx [:request :headers "Authorization"] (str type " " token))))})
 
-(def user-agent
-  {:name ::user-agent
-   :enter (fn [ctx]
-            (assoc-in ctx [:request :headers "User-Agent"] "Treehouse (https://github.com/KyleErhabor/treehouse, 1.0.0)"))})
-
 (defn prepend-version [handler]
   (concat ["/v" :version] handler))
 

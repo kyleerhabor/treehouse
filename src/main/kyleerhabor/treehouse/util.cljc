@@ -22,6 +22,11 @@
                 (do (reset! called? true) first))]
         (apply g args)))))
 
+(defmacro once
+  "Returns a function that evaluates `body` only once."
+  [& body]
+  `(partial deref (delay ~@body)))
+
 #?(:clj
-   (defn load-edn [source]
+   (defn edn [source]
      (edn/read (java.io.PushbackReader. (io/reader source)))))

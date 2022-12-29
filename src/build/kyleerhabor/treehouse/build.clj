@@ -1,10 +1,17 @@
 (ns kyleerhabor.treehouse.build
   (:require
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.build.api :as b]))
 
+(defn edn [source]
+  (edn/read (java.io.PushbackReader. (io/reader source))))
+
+(def project (edn "resources/project.edn"))
+
 (def lib 'kyleerhabor/treehouse)
-(def version "1.0.0")
+(def version (:version project))
 (def class-dir "target/classes")
 (def basis (b/create-basis {:aliases [:server]}))
 (def file (str "target/" (name lib) "-" version "-standalone.jar"))
