@@ -8,8 +8,7 @@
 (defn edn [source]
   (edn/read (java.io.PushbackReader. (io/reader source))))
 
-(def project-file "resources/project.edn")
-(def project (edn project-file))
+(def project (edn "resources/project.edn"))
 
 (def lib 'kyleerhabor/treehouse)
 (def version (:version project))
@@ -31,7 +30,7 @@
 
 (defn uberjar [{:keys [include]
                 :or {include ["kyleerhabor/**"
-                              project-file
+                              "project.edn"
                               "content/**"
                               "articles/**"
                               "public/robots.txt"
