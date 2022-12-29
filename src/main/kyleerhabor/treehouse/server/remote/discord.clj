@@ -2,7 +2,7 @@
   (:require
    [kyleerhabor.treehouse.config :as-alias cfg]
    [kyleerhabor.treehouse.server.remote :as r]
-   [kyleerhabor.treehouse.server.config :as config :refer [config project]]
+   [kyleerhabor.treehouse.server.config :refer [config project]]
    [kyleerhabor.treehouse.server.database :as db]
    [kyleerhabor.treehouse.server.response :as res]
    [kyleerhabor.treehouse.util :refer [once]]
