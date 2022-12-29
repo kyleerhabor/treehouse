@@ -8,28 +8,28 @@
    [kyleerhabor.treehouse.schema.project :as-alias project]
    [kyleerhabor.treehouse.server.database :as db]
    [kyleerhabor.treehouse.server.query.cache :as c]
-   [kyleerhabor.treehouse.util :refer [load-edn]]
+   [kyleerhabor.treehouse.util :refer [edn]]
    [com.wsscode.pathom.core :as p]
    [com.wsscode.pathom.connect :as pc :refer [defresolver]]))
 
-(def home-content (s/parse-element (load-edn (io/resource "content/home.edn"))))
+(def home-content (s/parse-element (edn (io/resource "content/home.edn"))))
 
-(def arts (update (load-edn (io/resource "content/articles.edn")) :articles
+(def arts (update (edn (io/resource "content/articles.edn")) :articles
             (fn [articles]
               (map
                 (fn [article]
                   (-> article
-                    (update :path #(s/parse-element (load-edn (io/resource %))))
+                    (update :path #(s/parse-element (edn (io/resource %))))
                     (rename-keys {:path :content}))) articles))))
 
 (def arts-map (update arts :articles #(zipmap (map :id %) %)))
 
-(def projs (update (load-edn (io/resource "content/projects.edn")) :projects
+(def projs (update (edn (io/resource "content/projects.edn")) :projects
              (fn [projects]
                (map
                  (fn [project]
                    (-> project
-                     (update :path #(s/parse-element (load-edn (io/resource %))))
+                     (update :path #(s/parse-element (edn (io/resource %))))
                      (rename-keys {:path :content}))) projects))))
 
 (def projs-map (update projs :projects #(zipmap (map :id %) %)))
