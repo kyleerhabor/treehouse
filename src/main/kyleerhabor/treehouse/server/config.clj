@@ -1,5 +1,7 @@
 (ns kyleerhabor.treehouse.server.config
   (:require
+   [clojure.java.shell :refer [sh]]
+   [clojure.string :as str]
    [kyleerhabor.treehouse.server :as-alias server]
    [kyleerhabor.treehouse.server.database :as-alias db]
    [kyleerhabor.treehouse.server.remote.discord :as-alias discord]
@@ -10,6 +12,13 @@
    [malli.error :as me]
    [malli.util :as mu]
    [mount.core :refer [defstate]]))
+
+(defn out [r]
+  (str/trim (:out r)))
+
+(def version (out (sh "git" "describe" "--tags")))
+
+(def url (out (sh "git" "config" "--get" "remote.origin.url")))
 
 (def Config
   [:map

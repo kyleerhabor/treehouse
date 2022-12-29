@@ -1,7 +1,7 @@
 (ns kyleerhabor.treehouse.server.remote.discord
   (:require
    [kyleerhabor.treehouse.server.remote :as r]
-   [kyleerhabor.treehouse.server.config :refer [config]]
+   [kyleerhabor.treehouse.server.config :as config :refer [config]]
    [kyleerhabor.treehouse.server.database :as db]
    [kyleerhabor.treehouse.server.response :as res]
    [datalevin.core :as d]
@@ -14,6 +14,8 @@
 
 (def api-version 10)
 
+(def user-agent (str "DiscordBot (" config/url ", " (subs config/version 1) ")"))
+
 (defn current-access-token []
   (d/datom-v (db/latest-datom (d/datoms @db/conn :ave ::access-token))))
 
@@ -25,11 +27,16 @@
   (d/transact! db/conn [{::access-token access
                          ::refresh-token refresh}]))
 
+(def user-agent
+  {:name ::user-agent
+   :enter (fn [ctx]
+            (assoc-in ctx [:request :headers "User-Agent"] user-agent))})
+
 (def authorization (r/authorization (fn []
                                       {:type "Bearer"
                                        :token (current-access-token)})))
 
-(def interceptors [authorization r/user-agent])
+(def interceptors [authorization user-agent])
 
 (def discord (m/bootstrap api-url [{:route-name :exchange-access-token
                                     :part-parts ["/oauth2/token"]
