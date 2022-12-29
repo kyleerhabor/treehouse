@@ -76,6 +76,7 @@ The `build` alias with the `uberjar` option can be used to compile the project. 
 for selecting files to be packaged into the produced uberjar (a JAR with dependencies) from the `src` and `resources`
 folders. By default, `:include` lists the following:
 - `src/main/kyleerhabor`
+- `resources/project.edn`
 - `resources/content`
 - `resources/articles`
 - `resources/public/robots.txt`
