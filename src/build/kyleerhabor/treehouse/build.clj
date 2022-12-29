@@ -4,7 +4,7 @@
    [clojure.tools.build.api :as b]))
 
 (def lib 'kyleerhabor/treehouse)
-(def version "0.1.0")
+(def version "1.0.0")
 (def class-dir "target/classes")
 (def basis (b/create-basis {:aliases [:server]}))
 (def file (str "target/" (name lib) "-" version "-standalone.jar"))
