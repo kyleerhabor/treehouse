@@ -18,6 +18,7 @@
 (def default-handler (rr/ring-handler r/default-router
                        (rr/create-default-handler default-handler-options)))
 
+;; TODO: Implement CORS.
 (def handler (rr/ring-handler r/router
                (rr/routes
                  (rr/redirect-trailing-slash-handler)

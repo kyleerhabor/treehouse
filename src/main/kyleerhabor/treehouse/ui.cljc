@@ -122,7 +122,8 @@
   ;; TODO: Provide a body and stop the UI from present it in the UI for a split moment on page load.
   {:query [::id]
    :ident (fn [] (singleton ::?))
-   :initial-state {}})
+   :initial-state {}}
+  (dom/p "How'd you get here?"))
 
 (def ui-not-found (comp/factory NotFound))
 
@@ -251,6 +252,9 @@
                  :content "width=device-width, initial-scale=1"})
       (dom/meta {:name "description"
                  :content "Kyle Erhabor is a software developer known under the pseudonym Klay."})
+      ;; https://stackoverflow.com/a/38917888/14695788
+      (dom/link {:href "data:,"
+                 :rel "icon"})
       ;; It's kind of annoying that Fulcro prepends a space when using :classes even when :className and (dom/... :.class) aren't used.
       (dom/link {:href "/assets/main/css/compiled/main.css"
                  :rel "stylesheet"}))

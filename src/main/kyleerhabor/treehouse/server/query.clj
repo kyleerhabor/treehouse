@@ -2,10 +2,10 @@
   (:require
    [clojure.java.io :as io]
    [clojure.set :refer [rename-keys]]
-   [kyleerhabor.treehouse.schema.project :as-alias project]
    [kyleerhabor.treehouse.schema :as s]
    [kyleerhabor.treehouse.schema.article :as-alias article]
    [kyleerhabor.treehouse.schema.github.repository :as-alias gr]
+   [kyleerhabor.treehouse.schema.project :as-alias project]
    [kyleerhabor.treehouse.server.database :as db]
    [kyleerhabor.treehouse.server.query.cache :as c]
    [kyleerhabor.treehouse.util :refer [load-edn]]

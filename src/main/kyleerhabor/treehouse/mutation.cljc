@@ -9,7 +9,7 @@
 (defn route* [db route]
   (let [ident (route+/ident route)]
     (-> db
-      (assoc-in ident route)
+      (update-in ident merge route)
       (target/integrate-ident* ident :replace [::ui/app :route]))))
 
 (defn remove-route* [db]

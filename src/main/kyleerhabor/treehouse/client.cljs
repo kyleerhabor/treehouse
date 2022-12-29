@@ -5,6 +5,7 @@
    [kyleerhabor.treehouse.mutation :as mut]
    [kyleerhabor.treehouse.route.ui :as route+]
    [kyleerhabor.treehouse.ui :as ui]
+   [kyleerhabor.treehouse.util :refer [after noop]]
    [com.fulcrologic.fulcro.algorithms.server-render :as ssr]
    [com.fulcrologic.fulcro.application :as app]
    [com.fulcrologic.fulcro.components :as comp]
@@ -12,12 +13,13 @@
 
 (defn init []
   (reset! (::app/state-atom app) (ssr/get-SSR-initial-state))
-  (app/set-root! app ui/Root {:initialize-state? true})
-  ;; I'd like to push initial routing to the server.
-  (rfe/start! router (fn [match _]
-                       (if-let [handler (:handler (:data match))]
-                         (handler match))
-                       (comp/transact! app [(mut/route (some-> match route+/props))])) {:use-fragment false})
+  ;; Setting :initialize-state? to true causes the UI router to route to the not found page, then immediately route to
+  ;; the correct page afterwards, which is not what I want.
+  (app/set-root! app ui/Root {})
+  (rfe/start! router (after noop (fn [match _]
+                                   (if-let [handler (:handler (:data match))]
+                                     (handler match))
+                                   (comp/transact! app [(mut/route (some-> match route+/props))]))) {:use-fragment false})
   (mount {:hydrate? true
           :initialize-state? false}))
 
