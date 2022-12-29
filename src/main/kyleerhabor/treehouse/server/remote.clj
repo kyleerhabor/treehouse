@@ -13,7 +13,7 @@
 (def user-agent
   {:name ::user-agent
    :enter (fn [ctx]
-            (assoc-in ctx [:request :headers "User-Agent"] "Treehouse (https://github.com/KyleErhabor/treehouse, 0.1.0)"))})
+            (assoc-in ctx [:request :headers "User-Agent"] "Treehouse (https://github.com/KyleErhabor/treehouse, 1.0.0)"))})
 
 (defn prepend-version [handler]
   (concat ["/v" :version] handler))
