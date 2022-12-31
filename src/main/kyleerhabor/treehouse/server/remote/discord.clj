@@ -41,7 +41,7 @@
 (def interceptors [authorization user-agent])
 
 (def discord (m/bootstrap api-url [{:route-name :exchange-access-token
-                                    :part-parts ["/oauth2/token"]
+                                    :path-parts ["/oauth2/token"]
                                     :method :post
                                     :consumes ["application/x-www-form-urlencoded"]
                                     :produces ["application/json"]
@@ -51,7 +51,7 @@
                                                   :code s/Str
                                                   :redirect_uri s/Str}}
                                    {:route-name :exchange-refresh-token
-                                    :part-parts ["/oauth2/token"]
+                                    :path-parts ["/oauth2/token"]
                                     :method :post
                                     :consumes ["application/x-www-form-urlencoded"]
                                     :produces ["application/json"]
