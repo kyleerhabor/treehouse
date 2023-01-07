@@ -24,11 +24,8 @@
                  (rr/redirect-trailing-slash-handler)
                  ;; TODO: Serve resources myself (for caching benefits).
                  (rr/create-resource-handler {:path "/"})
-                 ;; TODO: Figure out what to do with :not-acceptable.
                  (rr/create-default-handler (assoc default-handler-options :not-found default-handler)))
-               {:middleware [wrap-not-modified
-                             wrap-gzip
-                             r/exception-middleware]}))
+               {:middleware [wrap-not-modified wrap-gzip r/exception-middleware]}))
 
 (defstate server
   :start (let [port (::port config)

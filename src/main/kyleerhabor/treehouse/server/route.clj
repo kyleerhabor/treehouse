@@ -12,7 +12,7 @@
    [kyleerhabor.treehouse.server.config :as-alias config :refer [config]]
    [kyleerhabor.treehouse.server.query :as q]
    [kyleerhabor.treehouse.server.query.cache :as qc]
-   [kyleerhabor.treehouse.server.response :refer [doctype forbidden]]
+   [kyleerhabor.treehouse.server.response :refer [doctype forbidden internal-server-error]]
    [kyleerhabor.treehouse.ui :as ui]
    [com.fulcrologic.fulcro.algorithms.denormalize :refer [db->tree]]
    [com.fulcrologic.fulcro.algorithms.merge :as merge]
@@ -30,7 +30,8 @@
    [ring.middleware.session :refer [wrap-session]]
    [ring.middleware.x-headers :refer [wrap-content-type-options wrap-frame-options]]
    [ring.util.mime-type :refer [default-mime-types]]
-   [ring.util.response :as res]))
+   [ring.util.response :as res]
+   [taoensso.timbre :as log]))
 
 (defn allowed
   "Returns a comma-separated string of the request methods supported by a request."
@@ -118,7 +119,11 @@
                        :get {:handler page-handler}
                        :ui {:handler project}}})
 
-(def exception-middleware (rrex/create-exception-middleware {::rrex/default #(page-handler %2)}))
+(def exception-middleware
+  (rrex/create-exception-middleware
+    {::rrex/default (fn [ex req]
+                      (log/error ex "Error handling request" req)
+                      internal-server-error)}))
 
 (def router (rr/router (r/routes route+/router)
               (merge (dissoc (r/options route+/router) :compile)

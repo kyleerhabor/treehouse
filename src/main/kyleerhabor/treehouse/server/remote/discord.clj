@@ -38,7 +38,11 @@
                                       {:type "Bearer"
                                        :token (current-access-token)})))
 
-(def interceptors [authorization user-agent])
+(def nothrow {:name ::nothrow
+              :enter (fn [ctx]
+                       (assoc-in ctx [:request :throw-exceptions] false))})
+
+(def interceptors [authorization user-agent nothrow])
 
 (def discord (m/bootstrap api-url [{:route-name :exchange-access-token
                                     :path-parts ["/oauth2/token"]
@@ -79,8 +83,6 @@
                  (m/response-for discord route params))
                res)]
     (:body res*)))
-
-
 
 ;; Used by the :discord deps alias.
 (defn store [{:keys [code token refresh]}]

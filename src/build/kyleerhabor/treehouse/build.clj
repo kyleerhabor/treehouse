@@ -39,7 +39,6 @@
                               "public/assets/main/css/compiled/main.css"]}}]
   (clean nil)
   (release nil)
-  ;; The main JS file is hashed and we only want the file produced for this release.
   (b/copy-dir {:src-dirs ["src/main" "resources"]
                :include (glob include)
                :target-dir class-dir})
