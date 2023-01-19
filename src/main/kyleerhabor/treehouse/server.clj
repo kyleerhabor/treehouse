@@ -36,6 +36,16 @@
            server)
   :stop (.stop server))
 
-(defn -main []
-  ;; This may be a little problematic in production since it doesn't naturally stop the states.
+(defn run []
   (m/start))
+
+(defn stop []
+  (m/stop))
+
+(defn -main []
+  (run)
+  (.addShutdownHook (Runtime/getRuntime)
+    (Thread.
+      (fn []
+        (stop)
+        (shutdown-agents)))))
