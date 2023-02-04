@@ -3,8 +3,6 @@
    [#?(:clj com.fulcrologic.fulcro.dom-server
        :cljs com.fulcrologic.fulcro.dom) :as dom]
    [com.fulcrologic.fulcro-css.css :as css]
-   [com.fulcrologic.fulcro.algorithms.do-not-use :refer [base64-encode]] ; Please...
-   [com.fulcrologic.fulcro.algorithms.transit :refer [transit-clj->str]]
    [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
    [kyleerhabor.treehouse.schema.discord.user :as-alias du]
    [kyleerhabor.treehouse.schema.github.user :as-alias gu]
@@ -243,7 +241,7 @@
 
 (def ui-root (comp/factory Root))
 
-(defn document [db props {:keys [anti-forgery-token]}]
+(defn document [props]
   (dom/html {:lang "en-US"}
     (dom/head
       (dom/meta {:charset "utf-8"})
@@ -260,8 +258,4 @@
                  :rel "stylesheet"}))
     (dom/body
       (dom/div :#app
-        (ui-root props))
-      (dom/script {:dangerouslySetInnerHTML {:__html (str
-                                                       "window.INITIAL_APP_STATE=\"" (base64-encode (transit-clj->str db)) "\";"
-                                                       "var fulcro_network_csrf_token=\"" anti-forgery-token "\"")}})
-      (dom/script {:src "/assets/main/js/compiled/main.js"}))))
+        (ui-root props)))))

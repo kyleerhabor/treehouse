@@ -72,7 +72,7 @@
         props (db->tree (comp/get-query root db) db db)
         app (app/fulcro-app {:initial-db db})
         html (binding [comp/*app* app]
-               (dom/render-to-str (ui/document db props {:anti-forgery-token (:anti-forgery-token request)})))]
+               (dom/render-to-str (ui/document props)))]
     (-> (res/response (str doctype html))
       (res/content-type (get default-mime-types "html"))
       (res/charset "utf-8"))))

@@ -1,4 +1,5 @@
 (ns kyleerhabor.treehouse.server
+  (:gen-class)
   (:require
    [kyleerhabor.treehouse.server.config :refer [config]]
    [kyleerhabor.treehouse.server.response :as res]
@@ -8,8 +9,7 @@
    [ring.adapter.jetty :refer [run-jetty]]
    [ring.middleware.gzip :refer [wrap-gzip]]
    [ring.middleware.not-modified :refer [wrap-not-modified]]
-   [taoensso.timbre :as log])
-  (:gen-class))
+   [taoensso.timbre :as log]))
 
 (def method-not-allowed (comp res/method-not-allowed r/allowed))
 
@@ -42,10 +42,20 @@
 (defn stop []
   (m/stop))
 
-(defn -main []
+(defn system [start stop]
+  (start)
+  (.addShutdownHook (Runtime/getRuntime) (Thread. stop)))
+
+(defn -main [& _]
+  (system run
+    (fn []
+      (stop)
+      (shutdown-agents))))
+
+
+(comment
+  ;; Run
   (run)
-  (.addShutdownHook (Runtime/getRuntime)
-    (Thread.
-      (fn []
-        (stop)
-        (shutdown-agents)))))
+
+  ;; Stop
+  (stop))
