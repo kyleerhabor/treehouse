@@ -40,8 +40,8 @@
                :include (glob include)
                :target-dir class-dir})
   (b/compile-clj {:basis basis
-                  :class-dir class-dir
                   :src-dirs ["src/main"]
+                  :class-dir class-dir
                   :java-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED" "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]
                   :compile-opts {:disable-locals-clearing false
                                  :elide-meta [:doc :added :line :column :file]
