@@ -1,16 +1,16 @@
 (ns kyleerhabor.treehouse.ui
   (:require
-   [#?(:clj com.fulcrologic.fulcro.dom-server
-       :cljs com.fulcrologic.fulcro.dom) :as dom]
-   [com.fulcrologic.fulcro-css.css :as css]
-   [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
    [kyleerhabor.treehouse.schema.discord.user :as-alias du]
    [kyleerhabor.treehouse.schema.github.user :as-alias gu]
    [kyleerhabor.treehouse.route :refer [href+]]
    [kyleerhabor.treehouse.schema.article :as-alias article]
    [kyleerhabor.treehouse.schema.github.repository :as-alias gr]
    [kyleerhabor.treehouse.schema.project :as-alias project]
-   [kyleerhabor.treehouse.ui.icon :as icon]))
+   [kyleerhabor.treehouse.ui.icon :as icon]
+   [#?(:clj com.fulcrologic.fulcro.dom-server
+       :cljs com.fulcrologic.fulcro.dom) :as dom]
+   [com.fulcrologic.fulcro-css.css :as css]
+   [com.fulcrologic.fulcro.components :as comp :refer [defsc]]))
 
 (defn singleton [id]
   [::id id])
@@ -228,7 +228,7 @@
            {::heading (comp/get-query Heading)}]
    :initial-state (fn [_] {:route (comp/get-initial-state Router)
                            ::heading (comp/get-initial-state Heading)})}
-  (dom/div
+  (dom/div {:id "container"}
     (ui-heading heading)
     (ui-router route)))
 
@@ -255,6 +255,8 @@
                  :rel "icon"})
       ;; It's kind of annoying that Fulcro prepends a space when using :classes even when :className and (dom/... :.class) aren't used.
       (dom/link {:href "/assets/main/css/compiled/main.css"
+                 :rel "stylesheet"})
+      (dom/link {:href "/assets/main/css/main.css"
                  :rel "stylesheet"}))
     (dom/body
       (dom/div :#app
