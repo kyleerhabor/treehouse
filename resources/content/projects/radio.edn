@@ -1,0 +1,4 @@
+(doc {:name "Radio"
+      :github {:owner "KyleErhabor"
+               :name "radio"}}
+  (text "Broadcast your currently playing song in Doppler to Discord via Rich Presence."))

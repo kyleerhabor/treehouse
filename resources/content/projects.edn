@@ -1,4 +1,6 @@
-{:projects [{:id :treehouse
-             :path "content/projects/treehouse.edn"}
+{:projects [{:id :radio
+             :path "content/projects/radio.edn"}
             {:id :assistant
-             :path "content/projects/assistant.edn"}]}
+             :path "content/projects/assistant.edn"}
+            {:id :treehouse
+             :path "content/projects/treehouse.edn"}]}
