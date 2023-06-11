@@ -83,11 +83,11 @@
   (merge db (q/parse [{:home [:name :props :children]}])))
 
 (defn articles [db _]
-  (merge/merge-component db ui/ArticlesItem (:articles (q/parse [{:articles [::article/id ::article/name]}])) :replace [:article]))
+  (merge/merge-component db ui/ArticlesItem (:articles (q/parse [{:articles [::article/id ::article/title]}])) :replace [:articles]))
 
 (defn article [db match]
-  (let [ident (comp/get-ident ui/Project (route+/props match))]
-    (merge/merge-component db ui/Project (get (q/parse [{ident [::project/id ::project/name]}]) ident))))
+  (let [ident (comp/get-ident ui/Article (route+/props match))]
+    (merge/merge-component db ui/Article (get (q/parse [{ident [::article/id ::article/title ::article/content]}]) ident))))
 
 (defn projects [db _]
   (merge/merge-component db ui/ProjectsItem (:projects (q/parse [{:projects [::project/id ::project/name]}])) :replace [:projects]))

@@ -1,1 +1,2 @@
-{:articles []}
+{:articles [{:id :is-mission-control-plus-slow
+             :path "content/articles/is-mission-control-plus-slow.edn"}]}
