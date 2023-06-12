@@ -167,14 +167,14 @@
 (def ui-github-heading (comp/factory GithubHeading))
 
 (defsc DiscordUser [_ _]
-  {:query [::du/id ::du/username ::du/discriminator]
+  {:query [::du/id ::du/username]
    :ident ::du/id})
 
-(defsc DiscordHeading [_ {::du/keys [username discriminator]}]
-  {:query [::du/username ::du/discriminator]}
+(defsc DiscordHeading [_ {::du/keys [username]}]
+  {:query [::du/username]}
   (dom/div
     "Discord: "
-    (str username \# discriminator)))
+    username))
 
 (def ui-discord-heading (comp/factory DiscordHeading))
 

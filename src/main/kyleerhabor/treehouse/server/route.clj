@@ -52,10 +52,9 @@
   (let [db (-> db
              (assoc :email (::config/email config))
              (merge/merge-component ui/DiscordUser (-> (qc/current-discord-user)
-                                                     (select-keys [:id :username :discriminator])
+                                                     (select-keys [:id :username])
                                                      (rename-keys {:id ::du/id
-                                                                   :username ::du/username
-                                                                   :discriminator ::du/discriminator}))
+                                                                   :username ::du/username}))
                :replace [:discord])
              (merge/merge-component ui/GithubUser (-> (qc/current-github-viewer)
                                                     (select-keys [:id :url])
